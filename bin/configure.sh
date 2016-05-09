@@ -6,7 +6,9 @@ lowercase() {
 
 OS=`lowercase \`uname\``;
 ARCH=`lowercase \`uname -m\``;
-USER=`whoami`;
+USER_WHO=`whoami`;
+USER_LOG=`logname`;
+
 
 LYCHEEJS_NODE="";
 LYCHEEJS_ROOT="/opt/lycheejs";
@@ -62,10 +64,17 @@ _fertilize() {
 }
 
 
-if [ "$USER" != "root" ]; then
+if [ "$USER_WHO" != "root" ]; then
 
 	echo "You are not root.";
 	echo "Use \"sudo $0\"";
+
+	exit 1;
+
+elif [[ "$USER_WHO" == "root" && "$USER_LOG" == "root" ]]; then
+
+	echo "You are root.";
+	echo "Please exit the su shell and use \"sudo $0\"";
 
 	exit 1;
 
@@ -74,9 +83,8 @@ else
 	if [ "$OS" == "osx" ]; then
 
 		if [[ -x "/usr/local/bin/brew" ]]; then
-			USER_NAME=`who am i | awk '{print $1}'`;
 			PACKAGE_LIST="binutils coreutils libicns gnu-sed gnu-tar curl git wget";
-			PACKAGE_CMD="sudo -u $USER_NAME brew install $PACKAGE_LIST --with-default-names";
+			PACKAGE_CMD="sudo -u $USER_LOG brew install $PACKAGE_LIST --with-default-names";
 		elif [[ -x "/opt/local/bin/port" ]]; then
 			PACKAGE_LIST="binutils coreutils libicns gsed zip unzip gnutar curl git wget";
 			PACKAGE_CMD="port install $PACKAGE_LIST";
