@@ -198,8 +198,67 @@ lychee.define('fertilizer.Main').requires([
 
 
 					template.then('configure');
+					template.then('configure-project');
 					template.then('build');
+					template.then('build-project');
 					template.then('package');
+					template.then('package-project');
+
+
+					template.bind('configure-project', function(oncomplete) {
+
+						var shell  = this.shell;
+						var result = shell.exec(project + '/bin/configure.sh');
+						if (result === true) {
+
+							console.info('fertilizer: CONFIGURE-PROJECT SUCCESS');
+
+							oncomplete(true);
+
+						} else {
+
+							oncomplete(true);
+
+						}
+
+					}, template);
+
+					template.bind('build-project', function(oncomplete) {
+
+						var shell  = this.shell;
+						var result = shell.exec(project + '/bin/build.sh');
+						if (result === true) {
+
+							console.info('fertilizer: BUILD-PROJECT SUCCESS');
+
+							oncomplete(true);
+
+						} else {
+
+							oncomplete(true);
+
+						}
+
+					}, template);
+
+					template.bind('package-project', function(oncomplete) {
+
+						var shell  = this.shell;
+						var result = shell.exec(project + '/bin/package.sh');
+						if (result === true) {
+
+							console.info('fertilizer: PACKAGE-PROJECT SUCCESS');
+
+							oncomplete(true);
+
+						} else {
+
+							oncomplete(true);
+
+						}
+
+					}, template);
+
 
 					template.bind('complete', function() {
 

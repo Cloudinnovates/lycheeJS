@@ -1,12 +1,9 @@
 
-lychee.define('fertilizer.template.node.Application').requires([
-	'fertilizer.data.Shell'
-]).includes([
+lychee.define('fertilizer.template.node.Application').includes([
 	'fertilizer.Template'
 ]).exports(function(lychee, global, attachments) {
 
 	var _Template  = lychee.import('fertilizer.Template');
-	var _Shell     = lychee.import('fertilizer.data.Shell');
 	var _TEMPLATES = {
 		core:  null,
 		index: attachments["index.tpl"]
@@ -105,8 +102,8 @@ lychee.define('fertilizer.template.node.Application').requires([
 		this.bind('package', function(oncomplete) {
 
 			var name    = this.environment.id.split('/')[2];
-			var shell   = new _Shell('/bin/runtime/node');
 			var sandbox = this.sandbox;
+			var shell   = this.shell;
 
 			if (name === 'cultivator') {
 				name = this.environment.id.split('/')[3];
@@ -118,7 +115,7 @@ lychee.define('fertilizer.template.node.Application').requires([
 				console.log('fertilizer: PACKAGE ' + sandbox + ' ' + name);
 
 
-				var result = shell.exec('/package.sh ' + sandbox + ' ' + name);
+				var result = shell.exec('/bin/runtime/node/package.sh ' + sandbox + ' ' + name);
 				if (result === true) {
 
 					oncomplete(true);
