@@ -122,7 +122,9 @@ lychee.define('harvester.mod.Server').requires([
 
 		try {
 
-			server = _child_process.execFile(_ROOT + project + '/harvester.js', [
+			server = _child_process.execFile(_ROOT + '/bin/helper.sh', [
+				'env:node',
+				_ROOT + project + '/harvester.js',
 				_ROOT,
 				port,
 				host
