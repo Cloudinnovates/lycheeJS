@@ -1,6 +1,6 @@
 {
 	"short_name":  "${id}",
-	"name":        "${id} (powered by lycheeJS)",
+	"name":        "${id} (powered by lychee.js)",
 	"version":     "${version}",
 	"display":     "standalone",
 	"orientation": "landscape",

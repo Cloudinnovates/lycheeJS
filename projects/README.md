@@ -1,9 +1,9 @@
 
 ## Projects Folder
 
-This folder contains all projects made with lycheeJS. It already
+This folder contains all projects made with lychee.js. It already
 contains many examples and demos that you can open, edit and
-manipulate with the lycheeJS tools.
+manipulate with the lychee.js tools.
 
 
 

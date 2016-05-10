@@ -1,12 +1,12 @@
 
 ## Libraries Folder
 
-This folder contains all libraries made with lycheeJS. It
-already contains the core libraries of all lycheeJS software
+This folder contains all libraries made with lychee.js. It
+already contains the core libraries of all lychee.js software
 bots but allows the easy deployment and installation of
 additional libraries from the `Bot Peer Cloud`.
 
-The libraries of the lycheeJS ecosystem and the automatic
+The libraries of the lychee.js ecosystem and the automatic
 build/deploy/test system is available at [garden.lycheejs.org](http://garden.lycheejs.org).
 
 
