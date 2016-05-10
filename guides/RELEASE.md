@@ -1,11 +1,11 @@
 
-# Release Guide for lycheeJS
+# Release Guide for lychee.js
 
 1. [Update Runtimes](#update-runtimes)
   - [Fix Info.plist files](#fix-infoplist-files)
 2. [Release Runtimes](#release-runtimes)
-3. [Release lycheeJS](#release-lycheejs)
-4. [Release lycheeJS Bundles](#release-lycheejs-bundles)
+3. [Release lychee.js](#release-lycheejs)
+4. [Release lychee.js Bundles](#release-lycheejs-bundles)
 
 
 ## Update Runtimes
@@ -46,7 +46,7 @@ are listed below:
 ## Release Runtimes
 
 The runtimes are hosted at github, so that a `Contributor Installation`
-can still use only github for installing lycheeJS.
+can still use only github for installing lychee.js.
 
 ```bash
 cd /opt/lycheejs-edge/bin/runtime;
@@ -59,9 +59,9 @@ git push origin master -f;
 ```
 
 
-## Release lycheeJS
+## Release lychee.js Engine
 
-The lycheeJS version flags are used among all bundle-generation algorithms.
+The lychee.js version flags are used among all bundle-generation algorithms.
 That means we have to fix both the `README.md` and the `lychee.js` file
 in `/libraries/lychee/source/core`.
 
@@ -86,7 +86,7 @@ sed -i 's|2[0-9][0-9][0-9]-Q[1-4]|'$VERSION'|g' ./README.md;
 sed -i 's|2[0-9][0-9][0-9]-Q[1-4]|'$VERSION'|g' ./libraries/lychee/source/core/lychee.js;
 
 git add ./;
-git commit -m "lycheeJS $VERSION release";
+git commit -m "lychee.js $VERSION release";
 git rebase -i $OLD_HEAD;
 
 
@@ -98,7 +98,7 @@ git push origin master;
 ```
 
 
-## Release lycheeJS bundles
+## Release lychee.js Bundles
 
 The bundles have to be created on an up-to-date Ubuntu machine.
 The `package.sh` inside the root folder creates all bundles. In between
@@ -120,3 +120,4 @@ Now everything needs to be uploaded to the [lycheeJS-website](https://github.com
 
 Note that the files are too large to be hosted on github, that's why the
 server for the `lycheeJS-website` still exists and is served via `nginx`.
+
