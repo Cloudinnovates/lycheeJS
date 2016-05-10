@@ -84,7 +84,10 @@
 						"node"
 					]
 				},
-				"variant": "application"
+				"variant": "application",
+				"profile": {
+					"client": null
+				}
 			}
 		},
 		"files": {}

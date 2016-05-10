@@ -1,6 +1,5 @@
 
 lychee.define('app.net.Client').requires([
-	'lychee.data.BITON',
 	'app.net.client.Ping'
 ]).includes([
 	'lychee.net.Client'
@@ -8,7 +7,6 @@ lychee.define('app.net.Client').requires([
 
 	var _Client = lychee.import('lychee.net.Client');
 	var _Ping   = lychee.import('app.net.client.Ping');
-	var _BITON  = lychee.import('lychee.data.BITON');
 
 
 
@@ -19,7 +17,6 @@ lychee.define('app.net.Client').requires([
 	var Class = function(data) {
 
 		var settings = lychee.extend({
-			codec:     _BITON,
 			reconnect: 10000
 		}, data);
 

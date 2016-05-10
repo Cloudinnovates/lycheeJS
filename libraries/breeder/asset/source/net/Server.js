@@ -1,6 +1,5 @@
 
 lychee.define('app.net.Server').requires([
-	'lychee.data.BITON',
 	'app.net.remote.Ping'
 ]).includes([
 	'lychee.net.Server'
@@ -8,7 +7,6 @@ lychee.define('app.net.Server').requires([
 
 	var _Ping   = lychee.import('app.net.remote.Ping');
 	var _Server = lychee.import('lychee.net.Server');
-	var _BITON  = lychee.import('lychee.data.BITON');
 
 
 
@@ -19,7 +17,6 @@ lychee.define('app.net.Server').requires([
 	var Class = function(data) {
 
 		var settings = lychee.extend({
-			codec: _BITON
 		}, data);
 
 
