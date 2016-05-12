@@ -209,7 +209,9 @@ lychee.define('lychee.net.socket.WS').tags({
 								});
 
 								socket.on('timeout', function() {
-									// XXX: Do nothing
+
+									this.end();
+
 								});
 
 								socket.on('close', function() {
@@ -240,7 +242,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 								setTimeout(function() {
 									that.trigger('connect');
-								}, 1000);
+								}, 100);
 
 							} else {
 
@@ -423,11 +425,6 @@ lychee.define('lychee.net.socket.WS').tags({
 		},
 
 		send: function(data, binary) {
-
-// TODO: Fix this shit here
-if (typeof data === 'string') {
-	data = new Buffer(data, 'utf8');
-}
 
 			data   = data instanceof Buffer ? data : null;
 			binary = binary === true;
