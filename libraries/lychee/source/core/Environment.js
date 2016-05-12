@@ -295,7 +295,7 @@ lychee.Environment = typeof lychee.Environment !== 'undefined' ? lychee.Environm
 
 
 				// Create new prototype
-				namespace[classId].displayName = packageId + '.' + classId;
+				namespace[classId].displayName = definition.id;
 				namespace[classId].prototype = {};
 
 
@@ -338,7 +338,7 @@ lychee.Environment = typeof lychee.Environment !== 'undefined' ? lychee.Environm
 			} else {
 
 				namespace[classId] = template;
-				namespace[classId].displayName = packageId + '.' + classId;
+				namespace[classId].displayName = definition.id;
 
 
 				if (template instanceof Object) {
@@ -350,7 +350,7 @@ lychee.Environment = typeof lychee.Environment !== 'undefined' ? lychee.Environm
 		} else {
 
 			namespace[classId] = function() {};
-			namespace[classId].displayName = packageId + '.' + classId;
+			namespace[classId].displayName = definition.id;
 
 			if (this.debug === true) {
 				this.global.console.error('lychee-Environment (' + this.id + '): Invalid Definition "' + definition.id + '", it is a Dummy now.');
