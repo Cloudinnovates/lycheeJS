@@ -12,8 +12,8 @@ Support our libre Bot Cloud via BTC [1CamMuvrFU1QAMebPoDsL3JrioVDoxezY2](bitcoin
 The following repositories are related to the lychee.js project:
 
 - [lycheeJS-bundle](https://github.com/Artificial-Engineering/lycheeJS-bundle.git) generates the OS-ready bundles.
-- [lycheeJS-library](https://github.com/Artificial-Engineering/lycheeJS-library.git) contains the lychee.js Library (for `bower` and `npm`).
 - [lycheeJS-future](https://github.com/Artificial-Engineering/lycheeJS-future.git) contains concepts and ideas not yet finished.
+- [lycheeJS-library](https://github.com/Artificial-Engineering/lycheeJS-library.git) contains the lychee.js Library (for `bower` and `npm`).
 - [lycheeJS-runtime](https://github.com/Artificial-Engineering/lycheeJS-runtime.git) contains all pre-compiled runtimes (fertilizers).
 - [lycheeJS-tutorial](https://github.com/Artificial-Engineering/lycheeJS-tutorial.git) contains the lychee.js tutorial.
 - [lycheeJS-website](https://github.com/Artificial-Engineering/lycheeJS-website.git) contains the lychee.js website.
@@ -63,12 +63,20 @@ starting the `lycheejs-harvester`.
 
 
 
-## Install lychee.js (Developer Machine)
+# Install lychee.js
 
-The native bundles (such as a Debian or OSX package or the lycheeOS
+The lychee.js Bundles (such as Debian package, OSX package or lycheeOS
 image) are being deprecated, but can be built by anyone using the
 [lycheeJS-bundle](https://github.com/Artificial-Engineering/lycheeJS-bundle)
 repository.
+
+The lychee.js Library (available via `bower` and `npm`) is available
+in the [lycheeJS-library](https://github.com/Artificial-Engineering/lycheeJS-library)
+repository.
+
+
+
+## Install lychee.js Engine (Developer Machine)
 
 The netinstaller shell script allows to automatically install
 the lychee.js Engine on any UNIX-compatible machine (arm, x86 or amd64).
@@ -87,7 +95,7 @@ The above commands will look similar to this if everything went fine.
 
 
 
-## Bootup lychee.js (Developer Machine)
+## Bootup lychee.js Engine (Developer Machine)
 
 After you've installed the lychee.js Engine, you can directly start the `lycheejs-harvester`.
 
@@ -116,6 +124,26 @@ lycheejs-harvester start development; # --sandbox if you want a sandboxed harves
 The above commands will look similar to this if everything went fine.
 
 ![Bootup lychee.js](./guides/asset/readme-bootup.gif)
+
+
+
+## Update lychee.js Engine (Developer Machine)
+
+If you have a lychee.js Engine Installation, you can simply update
+your installation by using git.
+
+```bash
+cd /opt/lycheejs;
+
+# development branch (Unstable, defaulted and recommended)
+git checkout development;
+git pull origin development;
+
+# master branch (Quarterly release-cycles, breaking changes)
+git checkout master;
+git pull origin master;
+```
+
 
 
 ## Guides

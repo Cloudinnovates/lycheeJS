@@ -83,29 +83,29 @@ else
 	if [ "$OS" == "osx" ]; then
 
 		if [[ -x "/usr/local/bin/brew" ]]; then
-			PACKAGE_LIST="binutils coreutils libicns gnu-sed gnu-tar curl git wget";
+			PACKAGE_LIST="binutils coreutils libicns gnu-sed gnu-tar curl git";
 			PACKAGE_CMD="sudo -u $USER_LOG brew install $PACKAGE_LIST --with-default-names";
 		elif [[ -x "/opt/local/bin/port" ]]; then
-			PACKAGE_LIST="binutils coreutils libicns gsed zip unzip gnutar curl git wget";
+			PACKAGE_LIST="binutils coreutils libicns gsed zip unzip gnutar curl git";
 			PACKAGE_CMD="port install $PACKAGE_LIST";
 		fi;
 
 	elif [ "$OS" == "linux" ]; then
 
 		if [[ -x "/usr/bin/apt-get" ]]; then
-			PACKAGE_LIST="bash binutils binutils-multiarch coreutils icnsutils sed zip unzip tar curl git wget";
+			PACKAGE_LIST="bash binutils binutils-multiarch coreutils icnsutils sed zip unzip tar curl git";
 			PACKAGE_CMD="apt-get -y install $PACKAGE_LIST";
 		elif [[ -x "/usr/bin/dnf" ]]; then
-			PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git wget";
+			PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git";
 			PACKAGE_CMD="dnf -y install $PACKAGE_LIST";
 		elif [[ -x "/usr/bin/yum" ]]; then
-			PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git wget";
+			PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git";
 			PACKAGE_CMD="yum --setopt=alwaysprompt=no install $PACKAGE_LIST";
 		elif [[ -x "/usr/bin/pacman" ]]; then
-			PACKAGE_LIST="bash binutils coreutils libicns sed zip unzip tar curl git wget";
+			PACKAGE_LIST="bash binutils coreutils libicns sed zip unzip tar curl git";
 			PACKAGE_CMD="pacman -S --noconfirm $PACKAGE_LIST";
 		elif [[ -x "/usr/bin/zypper" ]]; then
-			PACKAGE_LIST="bash binutils coreutils icns-utils sed zip unzip tar curl git wget";
+			PACKAGE_LIST="bash binutils coreutils icns-utils sed zip unzip tar curl git";
 			PACKAGE_CMD="zypper --non-interactive install $PACKAGE_LIST";
 		fi;
 
