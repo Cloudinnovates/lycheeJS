@@ -152,6 +152,7 @@ lychee.define('fertilizer.template.html.Application').includes([
 		}, this);
 
 		this.bind('package', function(oncomplete) {
+			console.log('fertilizer: PACKAGE');
 			oncomplete(true);
 		}, this);
 

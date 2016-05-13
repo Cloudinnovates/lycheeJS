@@ -26,6 +26,7 @@ lychee.define('fertilizer.template.node.Library').includes([
 		 */
 
 		this.bind('configure', function(oncomplete) {
+			console.log('fertilizer: CONFIGURE');
 			oncomplete(true);
 		}, this);
 
@@ -63,6 +64,7 @@ lychee.define('fertilizer.template.node.Library').includes([
 		}, this);
 
 		this.bind('package', function(oncomplete) {
+			console.log('fertilizer: PACKAGE');
 			oncomplete(true);
 		}, this);
 
