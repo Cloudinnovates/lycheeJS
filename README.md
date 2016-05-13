@@ -135,11 +135,11 @@ your installation by using git.
 ```bash
 cd /opt/lycheejs;
 
-# development branch (Unstable, defaulted and recommended)
+# development branch (unstable but recommended)
 git checkout development;
 git pull origin development;
 
-# master branch (Quarterly release-cycles, breaking changes)
+# master branch (quarterly release-cycle with breaking changes)
 git checkout master;
 git pull origin master;
 ```
