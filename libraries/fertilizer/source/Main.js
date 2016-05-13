@@ -212,11 +212,11 @@ lychee.define('fertilizer.Main').requires([
 						if (result === true) {
 
 							console.info('fertilizer: CONFIGURE-PROJECT SUCCESS');
-
 							oncomplete(true);
 
 						} else {
 
+							console.warn('fertilizer: CONFIGURE-PROJECT FAILURE');
 							oncomplete(true);
 
 						}
@@ -230,11 +230,11 @@ lychee.define('fertilizer.Main').requires([
 						if (result === true) {
 
 							console.info('fertilizer: BUILD-PROJECT SUCCESS');
-
 							oncomplete(true);
 
 						} else {
 
+							console.warn('fertilizer: BUILD-PROJECT FAILURE');
 							oncomplete(true);
 
 						}
@@ -248,11 +248,11 @@ lychee.define('fertilizer.Main').requires([
 						if (result === true) {
 
 							console.info('fertilizer: PACKAGE-PROJECT SUCCESS');
-
 							oncomplete(true);
 
 						} else {
 
+							console.warn('fertilizer: PACKAGE-PROJECT FAILURE');
 							oncomplete(true);
 
 						}
