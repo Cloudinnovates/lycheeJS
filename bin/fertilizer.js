@@ -114,6 +114,11 @@ var _settings = (function() {
 
 		}
 
+	} else if (fs.existsSync(root + raw_arg1) === true) {
+
+		settings.project    = raw_arg1;
+		settings.identifier = null;
+
 	}
 
 
@@ -216,6 +221,14 @@ var _bootup = function(settings) {
 			project:    project,
 			identifier: identifier,
 			settings:   settings
+		});
+
+	} else if (has_project) {
+
+		_bootup({
+			project:    project,
+			identifier: null,
+			settings:   null
 		});
 
 	} else {

@@ -74,16 +74,11 @@ cd /opt/lycheejs-release;
 git clone git@github.com:Artificial-Engineering/lycheeJS.git ./;
 git checkout master;
 
-OLD_HEAD=`git rev-parse HEAD`;
-git pull origin development;
-
-
-# Now merge everything properly into master
-# I have no clue how to do this automagically :-/
-
 
 sed -i 's|2[0-9][0-9][0-9]-Q[1-4]|'$VERSION'|g' ./README.md;
 sed -i 's|2[0-9][0-9][0-9]-Q[1-4]|'$VERSION'|g' ./libraries/lychee/source/core/lychee.js;
+
+git merge --squash development;
 
 git add ./;
 git commit -m "lychee.js $VERSION release";
