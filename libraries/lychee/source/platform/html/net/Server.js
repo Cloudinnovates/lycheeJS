@@ -7,28 +7,21 @@ lychee.define('lychee.net.Server').tags({
 	'lychee.net.Remote'
 ]).includes([
 	'lychee.event.Emitter'
-]).exports(function(lychee, global, attachments) {
+]).supports(function(lychee, global) {
 
-	var _JSON = lychee.import('lychee.codec.JSON');
+	// TODO: Feature Detection of Raw TCP Socket API
 
+	return true;
 
+}).exports(function(lychee, global, attachments) {
 
-	/*
-	 * HELPERS
-	 */
-
-	// TODO: WebSocket Upgrade
-	// TODO: WebSocket Handshake
-
-
-
-	/*
-	 * IMPLEMENTATION
-	 */
-
-	var _storage = new lychee.Storage({
+	var _net     = require('net');
+	var _JSON    = lychee.import('lychee.codec.JSON');
+	var _Remote  = lychee.import('lychee.net.Remote');
+	var _Storage = lychee.import('lychee.Storage');
+	var _storage = new _Storage({
 		id:    'server',
-		type:  lychee.Storage.TYPE.persistent,
+		type:  _Storage.TYPE.persistent,
 		model: {
 			id:   '::ffff:1337',
 			host: '::ffff',
@@ -36,6 +29,11 @@ lychee.define('lychee.net.Server').tags({
 		}
 	});
 
+
+
+	/*
+	 * IMPLEMENTATION
+	 */
 
 	var Class = function(data) {
 
@@ -45,9 +43,15 @@ lychee.define('lychee.net.Server').tags({
 		this.codec = lychee.interfaceof(settings.codec, _JSON) ? settings.codec : _JSON;
 		this.host  = 'localhost';
 		this.port  = 1337;
+		this.type  = Class.TYPE.WS;
 
 
-		this.__socket = null;
+		this.__isConnected = false;
+		this.__server      = null;
+
+
+		this.setHost(settings.host);
+		this.setPort(settings.port);
 
 
 		lychee.event.Emitter.call(this);
@@ -88,6 +92,13 @@ lychee.define('lychee.net.Server').tags({
 	};
 
 
+	Class.TYPE = {
+		WS:   0,
+		REST: 1,
+		HTTP: 2
+	};
+
+
 	Class.prototype = {
 
 		/*
@@ -104,9 +115,10 @@ lychee.define('lychee.net.Server').tags({
 			var settings = {};
 
 
-			if (this.codec !== _JSON)      settings.codec = lychee.serialize(this.codec);
-			if (this.host !== 'localhost') settings.host  = this.host;
-			if (this.port !== 1337)        settings.port  = this.port;
+			if (this.codec !== _JSON)        settings.codec = lychee.serialize(this.codec);
+			if (this.host !== 'localhost')   settings.host  = this.host;
+			if (this.port !== 1337)          settings.port  = this.port;
+			if (this.type !== Class.TYPE.WS) settings.type  = this.type;
 
 
 			data['arguments'][0] = settings;
@@ -124,17 +136,61 @@ lychee.define('lychee.net.Server').tags({
 
 		connect: function() {
 
-			if (this.__socket === null) {
+			if (this.__isConnected === false) {
 
 				if (lychee.debug === true) {
-//					console.log('lychee.net.Server: Connected to ' + this.host + ':' + this.port);
+					console.log('lychee.net.Server: Connected to ' + this.host + ':' + this.port);
 				}
 
 
-				var that = this;
+				var that   = this;
+				var codec  = this.codec;
+				var type   = this.type;
 
 
+				// var server = new _net.Server();
 				// TODO: Setup HTTP Server
+
+
+				// server.on('connection', function(socket) {
+
+				// 	var host   = socket.remoteAddress || socket.server._connectionKey.split(':')[1];
+				// 	var port   = socket.remotePort    || socket.server._connectionKey.split(':')[2];
+				// 	var remote = new _Remote({
+				// 		codec: codec,
+				// 		host:  host,
+				// 		port:  port,
+				// 		type:  type
+				// 	});
+
+
+				// 	remote.bind('connect', function() {
+				// 		that.trigger('connect', [ this ]);
+				// 	});
+
+				// 	remote.bind('disconnect', function() {
+				// 		that.trigger('disconnect', [ this ]);
+				// 	});
+
+
+				// 	remote.connect(socket);
+
+				// });
+
+				// server.on('error', function() {
+				// 	this.close();
+				// });
+
+				// server.on('close', function() {
+				// 	that.__isConnected = false;
+				// 	that.__server      = null;
+				// });
+
+				// server.listen(this.port, this.host);
+
+
+				// this.__server      = server;
+				// this.__isConnected = true;
 
 
 				return true;
@@ -148,8 +204,9 @@ lychee.define('lychee.net.Server').tags({
 
 		disconnect: function() {
 
-			if (this.__socket !== null) {
-				this.__socket.close();
+			var server = this.__server;
+			if (server !== null) {
+				server.close();
 			}
 
 
@@ -189,6 +246,33 @@ lychee.define('lychee.net.Server').tags({
 			if (port !== null) {
 
 				this.port = port;
+
+				return true;
+
+			}
+
+
+			return false;
+
+		},
+
+		setType: function(type) {
+
+			type = lychee.enumof(Class.TYPE, type) ? type : null;
+
+
+			if (type !== null) {
+
+				var oldtype = this.type;
+				if (oldtype !== type) {
+
+					this.type = type;
+
+					this.disconnect();
+					this.connect();
+
+				}
+
 
 				return true;
 

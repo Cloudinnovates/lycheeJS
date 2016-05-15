@@ -1,6 +1,6 @@
 
 lychee.define('lychee.net.socket.HTTP').tags({
-	platform: 'node'
+	platform: 'html'
 }).requires([
 	'lychee.net.protocol.HTTP'
 ]).includes([
@@ -9,7 +9,6 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 	try {
 
-		require('http');
 
 		return true;
 
@@ -22,7 +21,6 @@ lychee.define('lychee.net.socket.HTTP').tags({
 }).exports(function(lychee, global, attachments) {
 
 	var _Protocol = lychee.import('lychee.net.protocol.HTTP');
-	var _http     = require('http');
 
 
 
@@ -82,72 +80,11 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 					var protocol = new _Protocol(_Protocol.TYPE.remote);
 
-
-					connection.setTimeout(0);
-					connection.setNoDelay(true);
-					connection.setKeepAlive(true, 0);
-					connection.removeAllListeners('timeout');
-
-
-					connection.on('data', function(blob) {
-
-						var chunks = protocol.receive(blob);
-						if (chunks.length > 0) {
-
-							for (var c = 0, cl = chunks.length; c < cl; c++) {
-								that.trigger('receive', [ chunks[c] ]);
-							}
-
-						}
-
-					});
-
-					connection.on('error', function() {
-
-						that.trigger('error');
-						this.end();
-
-					});
-
-					connection.on('timeout', function() {
-
-						this.end();
-
-					});
-
-					connection.on('close', function() {
-						// XXX: Do nothing
-					});
-
-					connection.on('end', function() {
-
-						if (lychee.debug === true) {
-							console.log('lychee.net.socket.HTTP: Disconnected');
-						}
-
-						that.__connection = null;
-						that.__protocol   = null;
-						that.trigger('disconnect');
-						// this.destroy();
-
-					});
-
-
-					if (lychee.debug === true) {
-						console.log('lychee.net.socket.HTTP: Connected to ' + host + ':' + port);
-					}
-
-
-					that.__connection = connection;
-					that.__protocol   = protocol;
-
-					setTimeout(function() {
-						that.trigger('connect');
-					}, 100);
+// TODO: lychee.net.Remote API
 
 				} else {
 
-// TODO: Port harvester.net.Client stuff
+// TODO: lychee.net.Client API
 
 				}
 

@@ -11,7 +11,7 @@ lychee.define('lychee.net.Server').tags({
 
 	try {
 
-		require('http');
+		require('net');
 
 		return true;
 
@@ -23,8 +23,9 @@ lychee.define('lychee.net.Server').tags({
 
 }).exports(function(lychee, global, attachments) {
 
-	var _http    = require('http');
+	var _net     = require('net');
 	var _JSON    = lychee.import('lychee.codec.JSON');
+	var _Remote  = lychee.import('lychee.net.Remote');
 	var _Storage = lychee.import('lychee.Storage');
 	var _storage = new _Storage({
 		id:    'server',
@@ -50,6 +51,7 @@ lychee.define('lychee.net.Server').tags({
 		this.codec = lychee.interfaceof(settings.codec, _JSON) ? settings.codec : _JSON;
 		this.host  = null;
 		this.port  = 1337;
+		this.type  = Class.TYPE.WS;
 
 
 		this.__isConnected = false;
@@ -98,6 +100,13 @@ lychee.define('lychee.net.Server').tags({
 	};
 
 
+	Class.TYPE = {
+		WS:   0,
+		REST: 1,
+		HTTP: 2
+	};
+
+
 	Class.prototype = {
 
 		/*
@@ -114,9 +123,10 @@ lychee.define('lychee.net.Server').tags({
 			var settings = {};
 
 
-			if (this.codec !== _JSON)      settings.codec = lychee.serialize(this.codec);
-			if (this.host !== 'localhost') settings.host  = this.host;
-			if (this.port !== 1337)        settings.port  = this.port;
+			if (this.codec !== _JSON)        settings.codec = lychee.serialize(this.codec);
+			if (this.host !== 'localhost')   settings.host  = this.host;
+			if (this.port !== 1337)          settings.port  = this.port;
+			if (this.type !== Class.TYPE.WS) settings.type  = this.type;
 
 
 			data['arguments'][0] = settings;
@@ -143,17 +153,19 @@ lychee.define('lychee.net.Server').tags({
 
 				var that   = this;
 				var codec  = this.codec;
-				var server = new _http.Server();
+				var type   = this.type;
+				var server = new _net.Server();
 
 
 				server.on('connection', function(socket) {
 
 					var host   = socket.remoteAddress || socket.server._connectionKey.split(':')[1];
 					var port   = socket.remotePort    || socket.server._connectionKey.split(':')[2];
-					var remote = new lychee.net.Remote({
+					var remote = new _Remote({
+						codec: codec,
 						host:  host,
 						port:  port,
-						codec: codec
+						type:  type
 					});
 
 
@@ -170,6 +182,9 @@ lychee.define('lychee.net.Server').tags({
 
 				});
 
+
+// TODO: Detect upgrade event differently
+// Upgrade event is not triggered by _net.Server
 
 				server.on('upgrade', function(request, socket) {
 
@@ -249,6 +264,33 @@ lychee.define('lychee.net.Server').tags({
 			if (port !== null) {
 
 				this.port = port;
+
+				return true;
+
+			}
+
+
+			return false;
+
+		},
+
+		setType: function(type) {
+
+			type = lychee.enumof(Class.TYPE, type) ? type : null;
+
+
+			if (type !== null) {
+
+				var oldtype = this.type;
+				if (oldtype !== type) {
+
+					this.type = type;
+
+					this.disconnect();
+					this.connect();
+
+				}
+
 
 				return true;
 
