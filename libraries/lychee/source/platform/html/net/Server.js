@@ -15,7 +15,6 @@ lychee.define('lychee.net.Server').tags({
 
 }).exports(function(lychee, global, attachments) {
 
-	var _net     = require('net');
 	var _JSON    = lychee.import('lychee.codec.JSON');
 	var _Remote  = lychee.import('lychee.net.Remote');
 	var _Storage = lychee.import('lychee.Storage');

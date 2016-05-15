@@ -154,7 +154,10 @@ lychee.define('lychee.net.Server').tags({
 				var that   = this;
 				var codec  = this.codec;
 				var type   = this.type;
-				var server = new _net.Server();
+				var server = new _net.Server({
+					allowHalfOpen:  true,
+					pauseOnConnect: true
+				});
 
 
 				server.on('connection', function(socket) {
@@ -179,19 +182,6 @@ lychee.define('lychee.net.Server').tags({
 
 
 					remote.connect(socket);
-
-				});
-
-
-// TODO: Detect upgrade event differently
-// Upgrade event is not triggered by _net.Server
-
-				server.on('upgrade', function(request, socket) {
-
-					socket.emit('upgrade', {
-						headers: request.headers,
-						socket:  socket
-					});
 
 				});
 

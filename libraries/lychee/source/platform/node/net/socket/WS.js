@@ -37,8 +37,8 @@ lychee.define('lychee.net.socket.WS').tags({
 
 	var _verify_client = function(headers, nonce) {
 
-		var connection = (headers.connection || '').toLowerCase();
-		var upgrade    = (headers.upgrade    || '').toLowerCase();
+		var connection = (headers['connection'] || '').toLowerCase();
+		var upgrade    = (headers['upgrade']    || '').toLowerCase();
 		var protocol   = (headers['sec-websocket-protocol'] || '').toLowerCase();
 
 		if (connection === 'upgrade' && upgrade === 'websocket' && protocol === 'lycheejs') {
@@ -65,15 +65,15 @@ lychee.define('lychee.net.socket.WS').tags({
 
 	var _verify_remote = function(headers) {
 
-		var connection = (headers.connection || '').toLowerCase();
-		var upgrade    = (headers.upgrade    || '').toLowerCase();
+		var connection = (headers['connection'] || '').toLowerCase();
+		var upgrade    = (headers['upgrade']    || '').toLowerCase();
 		var protocol   = (headers['sec-websocket-protocol'] || '').toLowerCase();
 
-		if (connection.indexOf('upgrade') !== -1 && upgrade.indexOf('websocket') !== -1 && protocol === 'lycheejs') {
+		if (connection === 'upgrade' && upgrade === 'websocket' && protocol === 'lycheejs') {
 
-			var host   = headers.host   || null;
+			var host   = headers['host']   || null;
 			var nonce  = headers['sec-websocket-key'] || null;
-			var origin = headers.origin || null;
+			var origin = headers['origin'] || null;
 
 			if (host !== null && nonce !== null && origin !== null) {
 
@@ -111,6 +111,45 @@ lychee.define('lychee.net.socket.WS').tags({
 
 
 		return null;
+
+	};
+
+	var _verify_upgrade = function(data) {
+
+		var lines   = data.toString('utf8').split('\r\n');
+		var headers = {};
+
+
+		lines.forEach(function(line) {
+
+			var index = line.indexOf(':');
+			if (index !== -1) {
+
+				var key = line.substr(0, index).trim().toLowerCase();
+				var val = line.substr(index + 1, line.length - index - 1).trim();
+				if (key.match(/host|connection|upgrade|origin|sec-websocket-protocol/g) !== null) {
+					headers[key] = val.toLowerCase();
+				} else if (key === 'sec-websocket-key') {
+					headers[key] = val;
+				}
+
+			}
+
+		});
+
+
+		if (headers['connection'] === 'upgrade' && headers['upgrade'] === 'websocket') {
+
+			this.emit('upgrade', {
+				headers: headers,
+				socket:  this
+			});
+
+		} else {
+
+			this.destroy();
+
+		}
 
 	};
 
@@ -170,6 +209,10 @@ lychee.define('lychee.net.socket.WS').tags({
 
 				if (connection !== null) {
 
+					connection.once('data', _verify_upgrade.bind(connection));
+					connection.resume();
+
+
 					connection.on('upgrade', function(request) {
 
 						var protocol = new _Protocol(_Protocol.TYPE.remote);
@@ -181,11 +224,12 @@ lychee.define('lychee.net.socket.WS').tags({
 							var verification = _verify_remote(request.headers);
 							if (verification !== null) {
 
-								socket.write(verification, 'ascii');
+								socket.allowHalfOpen = true;
 								socket.setTimeout(0);
 								socket.setNoDelay(true);
 								socket.setKeepAlive(true, 0);
 								socket.removeAllListeners('timeout');
+								socket.write(verification, 'ascii');
 
 
 								socket.on('data', function(blob) {
@@ -201,7 +245,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 								});
 
-								socket.on('error', function() {
+								socket.on('error', function(err) {
 
 									that.trigger('error');
 									this.end();
@@ -226,8 +270,8 @@ lychee.define('lychee.net.socket.WS').tags({
 
 									that.__connection = null;
 									that.__protocol   = null;
+									this.destroy();
 									that.trigger('disconnect');
-									// this.destroy();
 
 								});
 
@@ -351,8 +395,8 @@ lychee.define('lychee.net.socket.WS').tags({
 
 									that.__connection = null;
 									that.__protocol   = null;
+									this.destroy();
 									that.trigger('disconnect');
-									// this.destroy();
 
 								});
 
@@ -458,7 +502,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 
 			if (this.__connection !== null) {
-				this.__connection.close();
+				this.__connection.destroy();
 			}
 
 		}
