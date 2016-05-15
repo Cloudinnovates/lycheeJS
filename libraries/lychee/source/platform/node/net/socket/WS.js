@@ -246,33 +246,21 @@ lychee.define('lychee.net.socket.WS').tags({
 								});
 
 								socket.on('error', function(err) {
-
 									that.trigger('error');
-									this.end();
-
+									that.disconnect();
 								});
 
 								socket.on('timeout', function() {
-
-									this.end();
-
+									that.trigger('error');
+									that.disconnect();
 								});
 
 								socket.on('close', function() {
-									// XXX: Do nothing
+									that.disconnect();
 								});
 
 								socket.on('end', function() {
-
-									if (lychee.debug === true) {
-										console.log('lychee.net.socket.WS: Disconnected');
-									}
-
-									that.__connection = null;
-									that.__protocol   = null;
-									this.destroy();
-									that.trigger('disconnect');
-
+									that.disconnect();
 								});
 
 
@@ -293,10 +281,8 @@ lychee.define('lychee.net.socket.WS').tags({
 								socket.end();
 								socket.destroy();
 
-
-								that.__connection = null;
-								that.__protocol   = null;
 								that.trigger('error');
+								that.disconnect();
 
 							}
 
@@ -369,35 +355,23 @@ lychee.define('lychee.net.socket.WS').tags({
 
 								});
 
-								socket.on('error', function() {
 
+								socket.on('error', function(err) {
 									that.trigger('error');
-									this.end();
-
+									that.disconnect();
 								});
 
 								socket.on('timeout', function() {
-
 									that.trigger('error');
-									this.end();
-
+									that.disconnect();
 								});
 
 								socket.on('close', function() {
-									// XXX: Do nothing
+									that.disconnect();
 								});
 
 								socket.on('end', function() {
-
-									if (lychee.debug === true) {
-										console.log('lychee.net.socket.WS: Disconnected');
-									}
-
-									that.__connection = null;
-									that.__protocol   = null;
-									this.destroy();
-									that.trigger('disconnect');
-
+									that.disconnect();
 								});
 
 
@@ -415,10 +389,8 @@ lychee.define('lychee.net.socket.WS').tags({
 								socket.end();
 								socket.destroy();
 
-
-								that.__connection = null;
-								that.__protocol   = null;
 								that.trigger('error');
+								that.disconnect();
 
 							}
 
@@ -434,10 +406,8 @@ lychee.define('lychee.net.socket.WS').tags({
 							socket.end();
 							socket.destroy();
 
-
-							that.__connection = null;
-							that.__protocol   = null;
 							that.trigger('error');
+							that.disconnect();
 
 						}
 
@@ -451,10 +421,8 @@ lychee.define('lychee.net.socket.WS').tags({
 							socket.end();
 							socket.destroy();
 
-
-							that.__connection = null;
-							that.__protocol   = null;
 							that.trigger('error');
+							that.disconnect();
 
 						}
 
@@ -501,8 +469,19 @@ lychee.define('lychee.net.socket.WS').tags({
 			}
 
 
-			if (this.__connection !== null) {
-				this.__connection.destroy();
+			var connection = this.__connection;
+			if (connection !== null) {
+
+				this.__connection = null;
+				this.__protocol   = null;
+
+				connection.destroy();
+
+
+				// XXX: destroy() method is SYNCHRONOUS
+				// so event HAS to be delayed
+				this.trigger('disconnect');
+
 			}
 
 		}
