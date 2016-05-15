@@ -270,19 +270,44 @@ lychee.Environment = typeof lychee.Environment !== 'undefined' ? lychee.Environm
 			var includes = definition._includes;
 			if (includes.length > 0) {
 
+				var ownenums   = null;
+				var ownmethods = null;
+				var ownkeys    = Object.keys(template);
+				var ownproto   = template.prototype;
 
-				// Cache old prototype
-				var oldprototype = null;
-				if (template.prototype instanceof Object) {
 
-					oldprototype = {};
+				if (ownkeys.length > 0) {
 
-					for (var property in template.prototype) {
-						oldprototype[property] = template.prototype[property];
+					ownenums = {};
+
+					for (var ok = 0, okl = ownkeys.length; ok < okl; ok++) {
+
+						var ownkey = ownkeys[ok];
+						if (ownkey === ownkey.toUpperCase()) {
+							ownenums[ownkey] = template[ownkey];
+						}
+
+					}
+
+					if (Object.keys(ownenums).length === 0) {
+						ownenums = null;
 					}
 
 				}
 
+				if (ownproto instanceof Object) {
+
+					ownmethods = {};
+
+					for (var ownmethod in ownproto) {
+						ownmethods[ownmethod] = ownproto[ownmethod];
+					}
+
+					if (Object.keys(ownmethods).length === 0) {
+						ownmethods = null;
+					}
+
+				}
 
 
 				// Define classId in namespace
@@ -294,21 +319,34 @@ lychee.Environment = typeof lychee.Environment !== 'undefined' ? lychee.Environm
 				});
 
 
-				// Create new prototype
 				namespace[classId].displayName = definition.id;
 				namespace[classId].prototype = {};
 
 
-				var extendargs = [];
+				var tplenums   = {};
+				var tplmethods = [ namespace[classId].prototype ];
 
-				extendargs.push(namespace[classId].prototype);
 
 				for (var i = 0, il = includes.length; i < il; i++) {
 
 					var include = _get_template.call(this.global, includes[i]);
 					if (include !== null) {
 
-						extendargs.push(include.prototype);
+						var inckeys = Object.keys(include);
+						if (inckeys.length > 0) {
+
+							for (var ik = 0, ikl = inckeys.length; ik < ikl; ik++) {
+
+								var inckey = inckeys[ik];
+								if (inckey === inckey.toUpperCase()) {
+									tplenums[inckey] = include[inckey];
+								}
+
+							}
+
+						}
+
+						tplmethods.push(include.prototype);
 
 					} else {
 
@@ -321,12 +359,24 @@ lychee.Environment = typeof lychee.Environment !== 'undefined' ? lychee.Environm
 				}
 
 
-				if (oldprototype !== null) {
-					extendargs.push(oldprototype);
+				if (ownenums !== null) {
+
+					for (var e in ownenums) {
+						tplenums[e] = ownenums[e];
+					}
+
+				}
+
+				if (ownmethods !== null) {
+					tplmethods.push(ownmethods);
 				}
 
 
-				lychee.extend.apply(lychee, extendargs);
+				for (var e in tplenums) {
+					namespace[classId][e] = tplenums[e];
+				}
+
+				lychee.extend.apply(lychee, tplmethods);
 
 				Object.seal(namespace[classId].prototype);
 
