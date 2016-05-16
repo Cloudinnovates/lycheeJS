@@ -341,7 +341,7 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 		// 8: Connection Close
 		} else if (operator === 0x08) {
 
-			this.close(Class.STATUS.normal_closure);
+			result.chunk = this.close(Class.STATUS.normal_closure);
 
 
 		// 9: Ping Frame
@@ -359,7 +359,7 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 		// 3-7: Reserved Non-Control Frames, 11-15: Reserved Control Frames
 		} else {
 
-			this.close(Class.STATUS.protocol_error);
+			result.chunk = this.close(Class.STATUS.protocol_error);
 
 		}
 
@@ -473,7 +473,7 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 				if (blob.length > Class.FRAMESIZE) {
 
-					this.close(Class.STATUS.message_too_big);
+					chunks.push(this.close(Class.STATUS.message_too_big));
 
 				} else if (this.__isClosed === false) {
 

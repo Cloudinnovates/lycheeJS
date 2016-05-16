@@ -212,6 +212,20 @@ lychee.define('lychee.net.socket.WS').tags({
 					connection.once('data', _verify_upgrade.bind(connection));
 					connection.resume();
 
+					connection.once('error', function(err) {
+
+						if (lychee.debug === true) {
+
+							if (err.code.match(/ECONNABORTED|ECONNREFUSED|ECONNRESET/) !== null) {
+								console.warn('lychee.net.socket.WS: BAD CONNECTION at ' + host + ':' + port);
+							}
+
+						}
+
+						that.trigger('error');
+						that.disconnect();
+
+					});
 
 					connection.on('upgrade', function(request) {
 
@@ -238,7 +252,21 @@ lychee.define('lychee.net.socket.WS').tags({
 									if (chunks.length > 0) {
 
 										for (var c = 0, cl = chunks.length; c < cl; c++) {
-											that.trigger('receive', [ chunks[c] ]);
+
+											var chunk = chunks[c];
+											if (chunk[0] === 136) {
+
+												that.send(chunk, true);
+												that.disconnect();
+
+												return;
+
+											} else {
+
+												that.trigger('receive', [ chunks[c] ]);
+
+											}
+
 										}
 
 									}
@@ -348,7 +376,20 @@ lychee.define('lychee.net.socket.WS').tags({
 									if (chunks.length > 0) {
 
 										for (var c = 0, cl = chunks.length; c < cl; c++) {
-											that.trigger('receive', [ chunks[c] ]);
+
+											var chunk = chunks[c];
+											if (chunk[0] === 136) {
+
+												that.disconnect();
+
+												return;
+
+											} else {
+
+												that.trigger('receive', [ chunks[c] ]);
+
+											}
+
 										}
 
 									}
@@ -382,7 +423,10 @@ lychee.define('lychee.net.socket.WS').tags({
 
 								that.__connection = socket;
 								that.__protocol   = protocol;
-								that.trigger('connect');
+
+								setTimeout(function() {
+									that.trigger('connect');
+								}, 0);
 
 							} else {
 
@@ -398,33 +442,31 @@ lychee.define('lychee.net.socket.WS').tags({
 
 					});
 
-					connector.on('error', function(response) {
+					connector.once('error', function(err) {
 
-						var socket = response.socket || null;
-						if (socket !== null) {
+						if (lychee.debug === true) {
 
-							socket.end();
-							socket.destroy();
-
-							that.trigger('error');
-							that.disconnect();
+							if (err.code.match(/ECONNABORTED|ECONNREFUSED|ECONNRESET/) !== null) {
+								console.warn('lychee.net.socket.WS: BAD CONNECTION at ' + host + ':' + port);
+							}
 
 						}
+
+						that.trigger('error');
+						that.disconnect();
+
+						this.end();
+						this.destroy();
 
 					});
 
 					connector.on('response', function(response) {
 
-						var socket = response.socket || null;
-						if (socket !== null) {
+						that.trigger('error');
+						that.disconnect();
 
-							socket.end();
-							socket.destroy();
-
-							that.trigger('error');
-							that.disconnect();
-
-						}
+						this.end();
+						this.destroy();
 
 					});
 
@@ -470,12 +512,15 @@ lychee.define('lychee.net.socket.WS').tags({
 
 
 			var connection = this.__connection;
-			if (connection !== null) {
+			var protocol   = this.__protocol;
+
+			if (connection !== null && protocol !== null) {
 
 				this.__connection = null;
 				this.__protocol   = null;
 
 				connection.destroy();
+				protocol.close();
 
 
 				// XXX: destroy() method is SYNCHRONOUS
