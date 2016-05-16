@@ -274,7 +274,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 								setTimeout(function() {
 									that.trigger('connect');
-								}, 100);
+								}, 0);
 
 							} else {
 
