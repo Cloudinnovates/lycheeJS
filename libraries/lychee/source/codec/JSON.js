@@ -271,7 +271,7 @@ lychee.define('lychee.codec.JSON').exports(function(lychee, global, attachments)
 
 
 			// 123: Number
-			} else if (!isNaN(parseInt(seek, 10))) {
+			} else if (seek === '-' || !isNaN(parseInt(seek, 10))) {
 
 				size = stream.search([ ',', ']', '}' ]);
 
