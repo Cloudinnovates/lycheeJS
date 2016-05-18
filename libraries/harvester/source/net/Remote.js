@@ -1,9 +1,13 @@
 
 lychee.define('harvester.net.Remote').requires([
-	'lychee.net.protocol.HTTP'
+	'harvester.net.protocol.HTTP'
 ]).includes([
 	'lychee.net.Tunnel'
 ]).exports(function(lychee, global, attachments) {
+
+	var _Protocol = lychee.import('harvester.net.protocol.HTTP');
+
+
 
 	/*
 	 * IMPLEMENTATION
@@ -87,7 +91,7 @@ lychee.define('harvester.net.Remote').requires([
 				var that = this;
 
 
-				this.__socket = new lychee.net.protocol.HTTP(socket, lychee.net.protocol.HTTP.TYPE.remote);
+				this.__socket = new _Protocol(socket, _Protocol.TYPE.remote);
 
 				this.__socket.ondata = function(headers, payload) {
 

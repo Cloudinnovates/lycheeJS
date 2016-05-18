@@ -136,7 +136,12 @@
 				],
 				"Server": [
 					"js"
-				]
+				],
+				"protocol": {
+					"HTTP": [
+						"js"
+					]
+				}
 			},
 			"serve": {
 				"API": [
