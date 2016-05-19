@@ -10,7 +10,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 	try {
 
-		require('http');
+		require('net');
 
 		if (typeof global.setInterval === 'function') {
 			return true;
@@ -26,7 +26,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 	var _Protocol    = lychee.import('lychee.net.protocol.WS');
 	var _SHA1        = lychee.import('lychee.crypto.SHA1');
-	var _http        = require('http');
+	var _net         = require('net');
 	var _setInterval = global.setInterval;
 
 
@@ -51,6 +51,7 @@ lychee.define('lychee.net.socket.WS').tags({
 				return sha1.digest().toString('base64');
 
 			})(nonce.toString('base64'));
+
 
 			if (accept === expect) {
 				return accept;
@@ -114,7 +115,87 @@ lychee.define('lychee.net.socket.WS').tags({
 
 	};
 
-	var _verify_upgrade = function(data) {
+	var _upgrade_client = function(host, port, nonce) {
+
+		var that       = this;
+		var handshake  = '';
+		var identifier = lychee.ROOT.project;
+
+
+		if (identifier.substr(0, lychee.ROOT.lychee.length) === lychee.ROOT.lychee) {
+			identifier = lychee.ROOT.project.substr(lychee.ROOT.lychee.length + 1);
+		}
+
+		for (var n = 0; n < 16; n++) {
+			nonce[n] = Math.round(Math.random() * 0xff);
+		}
+
+
+
+		// HEAD
+
+		handshake += 'GET / HTTP/1.1\r\n';
+		handshake += 'Host: ' + host + ':' + port + '\r\n';
+		handshake += 'Upgrade: WebSocket\r\n';
+		handshake += 'Connection: Upgrade\r\n';
+		handshake += 'Origin: lycheejs://' + identifier + '\r\n';
+		handshake += 'Sec-WebSocket-Key: ' + nonce.toString('base64') + '\r\n';
+		handshake += 'Sec-WebSocket-Version: 13\r\n';
+		handshake += 'Sec-WebSocket-Protocol: lycheejs\r\n';
+
+
+		// BODY
+		handshake += '\r\n';
+
+
+		this.once('data', function(data) {
+
+			var headers = {};
+			var lines   = data.toString('utf8').split('\r\n');
+
+
+			lines.forEach(function(line) {
+
+				var index = line.indexOf(':');
+				if (index !== -1) {
+
+					var key = line.substr(0, index).trim().toLowerCase();
+					var val = line.substr(index + 1, line.length - index - 1).trim();
+					if (key.match(/connection|upgrade|sec-websocket-version|sec-websocket-origin|sec-websocket-protocol/g) !== null) {
+						headers[key] = val.toLowerCase();
+					} else if (key === 'sec-websocket-accept') {
+						headers[key] = val;
+					}
+
+				}
+
+			});
+
+
+			if (headers['connection'] === 'upgrade' && headers['upgrade'] === 'websocket') {
+
+				this.emit('upgrade', {
+					headers: headers,
+					socket:  this
+				});
+
+			} else {
+
+				var err = new Error('connect ECONNREFUSED');
+				err.code = 'ECONNREFUSED';
+
+				this.emit('error', err);
+
+			}
+
+		}.bind(this));
+
+
+		this.write(handshake, 'ascii');
+
+	};
+
+	var _upgrade_remote = function(data) {
 
 		var lines   = data.toString('utf8').split('\r\n');
 		var headers = {};
@@ -209,15 +290,16 @@ lychee.define('lychee.net.socket.WS').tags({
 
 				if (connection !== null) {
 
-					connection.once('data', _verify_upgrade.bind(connection));
+					connection.once('data', _upgrade_remote.bind(connection));
 					connection.resume();
 
 					connection.once('error', function(err) {
 
 						if (lychee.debug === true) {
 
-							if (err.code.match(/ECONNABORTED|ECONNREFUSED|ECONNRESET/) !== null) {
-								console.warn('lychee.net.socket.WS: BAD CONNECTION at ' + host + ':' + port);
+							var code = err.code || '';
+							if (code.match(/ECONNABORTED|ECONNREFUSED|ECONNRESET/) !== null) {
+								console.warn('lychee.net.socket.WS: BAD CONNECTION to ' + host + ':' + port);
 							}
 
 						}
@@ -227,15 +309,15 @@ lychee.define('lychee.net.socket.WS').tags({
 
 					});
 
-					connection.on('upgrade', function(request) {
+					connection.on('upgrade', function(event) {
 
 						var protocol = new _Protocol(_Protocol.TYPE.remote);
-						var socket   = request.socket || null;
+						var socket   = event.socket || null;
 
 
 						if (socket !== null) {
 
-							var verification = _verify_remote(request.headers);
+							var verification = _verify_remote.call(socket, event.headers);
 							if (verification !== null) {
 
 								socket.allowHalfOpen = true;
@@ -293,7 +375,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 
 								if (lychee.debug === true) {
-									console.log('lychee.net.socket.WS: Connected to ' + host + ':' + port);
+									console.log('lychee.net.socket.WS: Connect to ' + host + ':' + port);
 								}
 
 
@@ -306,6 +388,12 @@ lychee.define('lychee.net.socket.WS').tags({
 
 							} else {
 
+								if (lychee.debug === true) {
+									console.warn('lychee.net.socket.WS: BAD HANDSHAKE to ' + host + ':' + port);
+								}
+
+
+								socket.write('', 'ascii');
 								socket.end();
 								socket.destroy();
 
@@ -320,38 +408,25 @@ lychee.define('lychee.net.socket.WS').tags({
 
 				} else {
 
-					var nonce = new Buffer(16);
-
-					for (var n = 0; n < 16; n++) {
-						nonce[n] = Math.round(Math.random() * 0xff);
-					}
-
-
-					var connector = _http.request({
-						hostname: host,
-						port:     port,
-						method:   'GET',
-						headers:  {
-							'Upgrade':                'websocket',
-							'Connection':             'Upgrade',
-							'Origin':                 url,
-							'Host':                   host + ':' + port,
-							'Sec-WebSocket-Key':      nonce.toString('base64'),
-							'Sec-WebSocket-Version':  '13',
-							'Sec-WebSocket-Protocol': 'lycheejs'
-						}
+					var nonce     = new Buffer(16);
+					var connector = _net.connect({
+						host: host,
+						port: port
 					});
 
 
-					connector.on('upgrade', function(response) {
+					connector.pause();
+					connector.once('connect', _upgrade_client.bind(connector, host, port, nonce));
+
+					connector.on('upgrade', function(event) {
 
 						var protocol = new _Protocol(_Protocol.TYPE.client);
-						var socket   = response.socket || null;
+						var socket   = event.socket || null;
 
 
 						if (socket !== null) {
 
-							var verification = _verify_client(response.headers, nonce);
+							var verification = _verify_client(event.headers, nonce);
 							if (verification !== null) {
 
 								socket.setTimeout(0);
@@ -417,7 +492,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 
 								if (lychee.debug === true) {
-									console.log('lychee.net.socket.WS: Connected to ' + host + ':' + port);
+									console.log('lychee.net.socket.WS: Connect to ' + host + ':' + port);
 								}
 
 
@@ -429,6 +504,11 @@ lychee.define('lychee.net.socket.WS').tags({
 								}, 0);
 
 							} else {
+
+								if (lychee.debug === true) {
+									console.warn('lychee.net.socket.WS: BAD HANDSHAKE to ' + host + ':' + port);
+								}
+
 
 								socket.end();
 								socket.destroy();
@@ -446,8 +526,9 @@ lychee.define('lychee.net.socket.WS').tags({
 
 						if (lychee.debug === true) {
 
-							if (err.code.match(/ECONNABORTED|ECONNREFUSED|ECONNRESET/) !== null) {
-								console.warn('lychee.net.socket.WS: BAD CONNECTION at ' + host + ':' + port);
+							var code = err.code || '';
+							if (code.match(/ECONNABORTED|ECONNREFUSED|ECONNRESET/) !== null) {
+								console.warn('lychee.net.socket.WS: BAD CONNECTION to ' + host + ':' + port);
 							}
 
 						}
@@ -460,17 +541,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 					});
 
-					connector.on('response', function(response) {
-
-						that.trigger('error');
-						that.disconnect();
-
-						this.end();
-						this.destroy();
-
-					});
-
-					connector.end();
+					connector.resume();
 
 				}
 
@@ -507,7 +578,7 @@ lychee.define('lychee.net.socket.WS').tags({
 		disconnect: function() {
 
 			if (lychee.debug === true) {
-				console.log('lychee.net.socket.WS: Disconnected');
+				console.log('lychee.net.socket.WS: Disconnect');
 			}
 
 
