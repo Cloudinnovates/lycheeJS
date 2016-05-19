@@ -44,7 +44,7 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 		// RFC7231
 		normal_okay:     '200 Okay',
 		protocol_error:  '400 Bad Request',
-		message_too_big: '413 Payload Too Large'
+		message_too_big: '413 Payload Too Large',
 		not_found:       '404 Not Found',
 		not_allowed:     '405 Method Not Allowed',
 		not_implemented: '501 Not Implemented',
