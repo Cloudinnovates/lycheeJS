@@ -236,7 +236,7 @@ lychee.define('game.net.remote.Control').includes([
 		serialize: function() {
 
 			var data = _Session.prototype.serialize.call(this);
-			data['constructor'] = 'app.net.remote.Control';
+			data['constructor'] = 'game.net.remote.Control';
 
 
 			return data;

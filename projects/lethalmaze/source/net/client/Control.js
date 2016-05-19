@@ -49,7 +49,7 @@ lychee.define('game.net.client.Control').includes([
 		serialize: function() {
 
 			var data = _Session.prototype.serialize.call(this);
-			data['constructor'] = 'app.net.client.Control';
+			data['constructor'] = 'game.net.client.Control';
 
 
 			return data;
