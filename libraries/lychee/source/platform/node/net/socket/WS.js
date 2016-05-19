@@ -345,7 +345,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 											} else {
 
-												that.trigger('receive', [ chunks[c] ]);
+												that.trigger('receive', [ chunk ]);
 
 											}
 
@@ -409,13 +409,13 @@ lychee.define('lychee.net.socket.WS').tags({
 				} else {
 
 					var nonce     = new Buffer(16);
-					var connector = _net.connect({
-						host: host,
-						port: port
+					var connector = new _net.Socket({
+						fd:       null,
+						readable: true,
+						writable: true
 					});
 
 
-					connector.pause();
 					connector.once('connect', _upgrade_client.bind(connector, host, port, nonce));
 
 					connector.on('upgrade', function(event) {
@@ -461,7 +461,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 											} else {
 
-												that.trigger('receive', [ chunks[c] ]);
+												that.trigger('receive', [ chunk ]);
 
 											}
 
@@ -541,7 +541,10 @@ lychee.define('lychee.net.socket.WS').tags({
 
 					});
 
-					connector.resume();
+					connector.connect({
+						host: host,
+						port: port
+					});
 
 				}
 
@@ -562,7 +565,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 				if (connection !== null && protocol !== null) {
 
-					var chunk = this.__protocol.send(data, binary);
+					var chunk = protocol.send(data, binary);
 					var enc   = binary === true ? 'binary' : 'utf8';
 
 					if (chunk !== null) {

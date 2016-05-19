@@ -1,5 +1,5 @@
 
-lychee.define('harvester.net.protocol.HTTP').exports(function(lychee, global, attachments) {
+lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attachments) {
 
 
 
@@ -231,7 +231,7 @@ lychee.define('harvester.net.protocol.HTTP').exports(function(lychee, global, at
 		if (lychee.debug === true) {
 
 			if (this.type === null) {
-				console.error('harvester.net.protocol.HTTP: Invalid (harvester.net.protocol.HTTP.TYPE) type.');
+				console.error('lychee.net.protocol.HTTP: Invalid (lychee.net.protocol.HTTP.TYPE) type.');
 			}
 
 		}

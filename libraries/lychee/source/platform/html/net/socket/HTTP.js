@@ -84,6 +84,8 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 				} else {
 
+					var protocol = new _Protocol(_Protocol.TYPE.client);
+
 // TODO: lychee.net.Client API
 
 				}
@@ -105,7 +107,7 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 				if (connection !== null && protocol !== null) {
 
-					var chunk = this.__protocol.send(data, binary);
+					var chunk = protocol.send(data, binary);
 					var enc   = binary === true ? 'binary' : 'utf8';
 
 					if (chunk !== null) {

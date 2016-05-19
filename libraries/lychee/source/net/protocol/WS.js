@@ -405,24 +405,26 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 	Class.STATUS = {
 
 		// IESG_HYBI
-		normal_closure:     1000,
-		going_away:         1001,
-		protocol_error:     1002,
-		unsupported_data:   1003,
-		no_status_received: 1005,
-		abnormal_closure:   1006,
-		invalid_payload:    1007,
-		policy_violation:   1008,
-		message_too_big:    1009,
-		missing_extension:  1010,
-		internal_error:     1011,
-
-		// IESG_HYBI Current
-		service_restart:    1012,
-		service_overload:   1013,
+		normal_closure:  1000,
+		protocol_error:  1002,
+		message_too_big: 1009
 
 		// IESG_HYBI
-		tls_handshake:      1015
+		// going_away:         1001,
+		// unsupported_data:   1003,
+		// no_status_received: 1005,
+		// abnormal_closure:   1006,
+		// invalid_payload:    1007,
+		// policy_violation:   1008,
+		// missing_extension:  1010,
+		// internal_error:     1011,
+
+		// IESG_HYBI Current
+		// service_restart:    1012,
+		// service_overload:   1013,
+
+		// IESG_HYBI
+		// tls_handshake:      1015
 
 	};
 
@@ -436,11 +438,9 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 	Class.prototype = {
 
-		ping: function() {
-
-			return _on_pong_frame.call(this);
-
-		},
+		/*
+		 * PROTOCOL API
+		 */
 
 		send: function(blob, binary) {
 
@@ -539,6 +539,18 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 
 			return null;
+
+		},
+
+
+
+		/*
+		 * CUSTOM API
+		 */
+
+		ping: function() {
+
+			return _on_pong_frame.call(this);
 
 		}
 

@@ -141,6 +141,11 @@
 					"HTTP": [
 						"js"
 					]
+				},
+				"remote": {
+					"Project": [
+						"js"
+					]
 				}
 			},
 			"serve": {
