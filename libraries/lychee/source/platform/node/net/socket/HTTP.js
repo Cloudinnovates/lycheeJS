@@ -30,12 +30,105 @@ lychee.define('lychee.net.socket.HTTP').tags({
 	 * HELPERS
 	 */
 
-	var _verify_client = function(headers) {
-		// TODO: Verify Client based on CORS headers
+	var _connect_socket = function(socket, protocol) {
+
+		var that = this;
+		if (that.__connection !== socket) {
+
+			socket.on('data', function(blob) {
+
+				var chunks = protocol.receive(blob);
+				if (chunks.length > 0) {
+
+					for (var c = 0, cl = chunks.length; c < cl; c++) {
+
+						var chunk = chunks[c];
+// TODO: Implement intelligent close frames
+						if (chunk.payload[0] === 136 && false) {
+
+							that.send(chunk.payload, chunk.headers, true);
+							that.disconnect();
+
+							return;
+
+						} else {
+
+							that.trigger('receive', [ chunk.payload, chunk.headers ]);
+
+						}
+
+					}
+
+				}
+
+			});
+
+			socket.on('error', function(err) {
+				that.trigger('error');
+				that.disconnect();
+			});
+
+			socket.on('timeout', function() {
+				that.trigger('error');
+				that.disconnect();
+			});
+
+			socket.on('close', function() {
+				that.disconnect();
+			});
+
+			socket.on('end', function() {
+				that.disconnect();
+			});
+
+
+			if (lychee.debug === true) {
+				console.log('lychee.net.socket.HTTP: Connect');
+			}
+
+
+			that.__connection = socket;
+			that.__protocol   = protocol;
+
+
+			setTimeout(function() {
+				that.trigger('connect');
+			}, 0);
+
+		}
+
 	};
 
-	var _verify_remote = function(headers) {
-		// TODO: Verify Remote based on CORS headers
+	var _disconnect_socket = function(socket, protocol) {
+
+		var that = this;
+		if (that.__connection === socket) {
+
+			socket.removeListener('data');
+			socket.removeListener('error');
+			socket.removeListener('timeout');
+			socket.removeListener('close');
+			socket.removeListener('end');
+
+			socket.destroy();
+			protocol.close();
+
+
+			if (lychee.debug === true) {
+				console.log('lychee.net.socket.HTTP: Disconnect');
+			}
+
+
+			that.__connection = null;
+			that.__protocol   = null;
+
+
+			setTimeout(function() {
+				that.trigger('disconnect');
+			}, 0);
+
+		}
+
 	};
 
 
@@ -103,6 +196,11 @@ lychee.define('lychee.net.socket.HTTP').tags({
 					connection.setKeepAlive(true, 0);
 					connection.removeAllListeners('timeout');
 
+
+					_connect_socket.call(that, connection, protocol);
+
+					connection.resume();
+
 				} else {
 
 					protocol   = new _Protocol(_Protocol.TYPE.client);
@@ -118,92 +216,32 @@ lychee.define('lychee.net.socket.HTTP').tags({
 					connection.setKeepAlive(true, 0);
 					connection.removeAllListeners('timeout');
 
-				}
 
+					_connect_socket.call(that, connection, protocol);
 
-				connection.on('data', function(blob) {
-
-					var chunks = protocol.receive(blob);
-					if (chunks.length > 0) {
-
-						for (var c = 0, cl = chunks.length; c < cl; c++) {
-
-							var chunk = chunks[c];
-// TODO: Implement intelligent close frames
-							if (chunk[0] === 136 && false) {
-
-								that.send(chunk, true);
-								that.disconnect();
-
-								return;
-
-							} else {
-
-								that.trigger('receive', [ chunk ]);
-
-							}
-
-						}
-
-					}
-
-				});
-
-				connection.on('error', function() {
-					that.trigger('error');
-					that.disconnect();
-				});
-
-				connection.on('timeout', function() {
-					that.trigger('error');
-					that.disconnect();
-				});
-
-				connection.on('close', function() {
-					that.disconnect();
-				});
-
-				connection.on('end', function() {
-					that.disconnect();
-				});
-
-
-				if (lychee.debug === true) {
-					console.log('lychee.net.socket.HTTP: Connect to ' + host + ':' + port);
-				}
-
-
-				that.__connection = connection;
-				that.__protocol   = protocol;
-
-
-				if (connection.server === null) {
 					connection.connect();
+
 				}
-
-
-				setTimeout(function() {
-					that.trigger('connect');
-				}, 0);
 
 			}
 
 		},
 
-		send: function(data, binary) {
+		send: function(payload, headers, binary) {
 
-			data   = data instanceof Buffer ? data : null;
-			binary = binary === true;
+			payload = payload instanceof Buffer ? payload : null;
+			headers = headers instanceof Object ? headers : null;
+			binary  = binary === true;
 
 
-			if (data !== null) {
+			if (payload !== null) {
 
 				var connection = this.__connection;
 				var protocol   = this.__protocol;
 
 				if (connection !== null && protocol !== null) {
 
-					var chunk = protocol.send(data, binary);
+					var chunk = protocol.send(payload, headers, binary);
 					var enc   = binary === true ? 'binary' : 'utf8';
 
 					if (chunk !== null) {
@@ -218,28 +256,20 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 		disconnect: function() {
 
-			if (lychee.debug === true) {
-				console.log('lychee.net.socket.HTTP: Disconnect');
-			}
-
-
 			var connection = this.__connection;
 			var protocol   = this.__protocol;
 
 			if (connection !== null && protocol !== null) {
 
-				this.__connection = null;
-				this.__protocol   = null;
-
-				connection.destroy();
-				protocol.close();
+				_disconnect_socket.call(this, connection, protocol);
 
 
-				// XXX: destroy() method is SYNCHRONOUS
-				// so event HAS to be delayed
-				this.trigger('disconnect');
+				return true;
 
 			}
+
+
+			return false;
 
 		}
 

@@ -22,6 +22,116 @@ lychee.define('lychee.net.socket.WS').tags({
 
 
 	/*
+	 * HELPERS
+	 */
+
+	var _connect_socket = function(socket, protocol) {
+
+		var that = this;
+		if (that.__connection !== socket) {
+
+			socket.onmessage = function(event) {
+
+				var blob = null;
+				var view = null;
+
+				if (typeof event.data === 'string') {
+
+					blob = new Buffer(event.data, 'utf8');
+
+				} else if (event.data instanceof ArrayBuffer) {
+
+					blob = new Buffer(event.data.byteLength);
+					view = new Uint8Array(event.data);
+
+					for (var v = 0, vl = blob.length; v < vl; v++) {
+						blob[v] = view[v];
+					}
+
+				}
+
+
+				var chunks = protocol.receive(blob);
+				if (chunks.length > 0) {
+
+					for (var c = 0, cl = chunks.length; c < cl; c++) {
+
+						var chunk = chunks[c];
+						if (chunk.payload[0] === 136) {
+
+							that.send(chunk.payload, chunk.headers, true);
+							that.disconnect();
+
+							return;
+
+						} else {
+
+							that.trigger('receive', [ chunk.payload, chunk.headers ]);
+
+						}
+
+					}
+
+				}
+
+			};
+
+			socket.onerror = function() {
+				that.trigger('error');
+				that.disconnect();
+			};
+
+			socket.ontimeout = function() {
+				that.trigger('error');
+				that.disconnect();
+			};
+
+			socket.onclose = function() {
+				that.disconnect();
+			};
+
+
+			that.__connection = socket;
+			that.__protocol   = protocol;
+
+
+			socket.onopen = function() {
+				that.trigger('connect');
+			};
+
+		}
+
+	};
+
+	var _disconnect_socket = function(socket, protocol) {
+
+		var that = this;
+		if (that.__connection === socket) {
+
+			socket.onmessage = function() {};
+			socket.onerror   = function() {};
+			socket.ontimeout = function() {};
+			socket.onclose   = function() {};
+
+			socket.close();
+			protocol.close();
+
+
+			that.__connection = null;
+			that.__protocol   = null;
+
+
+			setTimeout(function() {
+				that.trigger('disconnect');
+			}, 0);
+
+		}
+
+	};
+
+
+
+	/*
 	 * IMPLEMENTATION
 	 */
 
@@ -29,6 +139,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 		this.__connection = null;
 		this.__protocol   = null;
+
 
 		lychee.event.Emitter.call(this);
 
@@ -66,93 +177,30 @@ lychee.define('lychee.net.socket.WS').tags({
 			connection = typeof connection === 'object' ? connection : null;
 
 
-			var that = this;
-			var url  = 'ws://' + host + ':' + port;
+			var that     = this;
+			var url      = host.match(/:/g) !== null ? ('ws://[' + host + ']:' + port) : ('ws://' + host + ':' + port);
+			var protocol = null;
 
 
 			if (host !== null && port !== null) {
 
 				if (connection !== null) {
 
-					// TODO: Port lychee.net.Remote code
+					protocol   = new _Protocol(_Protocol.TYPE.remote);
+					connection = null;
 
+					// TODO: Remote Socket API
 
-					this.__connection = connection;
-					this.__protocol   = new _Protocol(_Protocol.TYPE.remote);
+					// _connect_socket.call(that, connection, protocol);
+					// connection.resume();
 
 				} else {
 
-
-					if (host.match(/:/g) !== null) {
-						url = 'ws://[' + host + ']:' + port;
-					}
-
-
+					protocol   = new _Protocol(_Protocol.TYPE.client);
 					connection = new _WebSocket(url, [ 'lycheejs' ]);
 
-					connection.onopen = function() {
 
-						that.trigger('connect');
-
-					};
-
-					connection.onmessage = function(event) {
-
-						var blob = null;
-						var view = null;
-
-						if (typeof event.data === 'string') {
-
-							blob = new Buffer(event.data, 'utf8');
-
-						} else if (event.data instanceof ArrayBuffer) {
-
-							blob = new Buffer(event.data.byteLength);
-							view = new Uint8Array(event.data);
-
-							for (var v = 0, vl = blob.length; v < vl; v++) {
-								blob[v] = view[v];
-							}
-
-						}
-
-
-						if (blob !== null) {
-							that.trigger('receive', [ blob ]);
-						}
-
-					};
-
-					connection.onclose = function() {
-
-						that.__connection = null;
-						that.__protocol   = null;
-						that.trigger('disconnect');
-
-					};
-
-					connection.ontimeout = function() {
-
-						that.trigger('error');
-						this.close();
-
-					};
-
-					connection.onerror = function() {
-
-						that.trigger('error');
-						this.close();
-
-					};
-
-
-					if (lychee.debug === true) {
-						console.log('lychee.net.socket.WS: Connected to ' + host + ':' + port);
-					}
-
-
-					this.__connection = connection;
-					this.__protocol   = new _Protocol(_Protocol.TYPE.client);
+					_connect_socket.call(that, connection, protocol);
 
 				}
 
@@ -160,33 +208,42 @@ lychee.define('lychee.net.socket.WS').tags({
 
 		},
 
-		send: function(data, binary) {
+		send: function(payload, headers, binary) {
 
-			data   = data instanceof Buffer ? data : null;
-			binary = binary === true;
+			payload = payload instanceof Buffer ? payload : null;
+			headers = headers instanceof Object ? headers : null;
+			binary  = binary === true;
 
 
-			if (data !== null) {
+			if (payload !== null) {
 
 				var connection = this.__connection;
 				var protocol   = this.__protocol;
 
 				if (connection !== null && protocol !== null) {
 
-					if (binary === true) {
+					var chunk = protocol.send(payload, headers, binary);
+					var enc   = binary === true ? 'binary' : 'utf8';
 
-						var blob = new ArrayBuffer(buffer.length);
-						var view = new Uint8Array(blob);
 
-						for (var b = 0, bl = blob.length; b < bl; b++) {
-							view[b] = blob[b];
+					if (chunk !== null) {
+
+						if (enc === 'binary') {
+
+							var blob = new ArrayBuffer(chunk.length);
+							var view = new Uint8Array(blob);
+
+							for (var c = 0, cl = chunk.length; c < cl; c++) {
+								view[c] = chunk[c];
+							}
+
+							connection.send(blob);
+
+						} else {
+
+							connection.send(chunk.toString('utf8'));
+
 						}
-
-						connection.send(blob);
-
-					} else {
-
-						connection.send(data.toString('utf8'));
 
 					}
 
@@ -198,14 +255,20 @@ lychee.define('lychee.net.socket.WS').tags({
 
 		disconnect: function() {
 
-			if (lychee.debug === true) {
-				console.log('lychee.net.socket.WS: Disconnected');
+			var connection = this.__connection;
+			var protocol   = this.__protocol;
+
+			if (connection !== null && protocol !== null) {
+
+				_disconnect_socket.call(this, connection, protocol);
+
+
+				return true;
+
 			}
 
 
-			if (this.__connection !== null) {
-				this.__connection.close();
-			}
+			return false;
 
 		}
 

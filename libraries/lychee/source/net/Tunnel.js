@@ -152,10 +152,10 @@ lychee.define('lychee.net.Tunnel').requires([
 
 		}, this);
 
-		this.bind('send', function(blob) {
+		this.bind('send', function(payload, headers) {
 
 			if (this.__socket !== null) {
-				this.__socket.send(blob);
+				this.__socket.send(payload, headers);
 			}
 
 		}, this);
@@ -282,15 +282,12 @@ lychee.define('lychee.net.Tunnel').requires([
 				}
 
 
-console.log('Tunnel type', type);
-
-
 				this.__socket.bind('connect', function() {
 					this.trigger('connect');
 				}, this)
 
-				this.__socket.bind('receive', function(data) {
-					this.receive(data);
+				this.__socket.bind('receive', function(payload, headers) {
+					this.receive(payload, headers);
 				}, this);
 
 				this.__socket.bind('disconnect', function() {
@@ -355,19 +352,27 @@ console.log('Tunnel type', type);
 			}
 
 
+			var headers = null;
 			if (service !== null) {
 
-				if (typeof service.id     === 'string') data._serviceId     = service.id;
-				if (typeof service.event  === 'string') data._serviceEvent  = service.event;
-				if (typeof service.method === 'string') data._serviceMethod = service.method;
+				headers = {};
+
+				if (typeof service.id     === 'string') headers['@service-id']     = service.id;
+				if (typeof service.event  === 'string') headers['@service-event']  = service.event;
+				if (typeof service.method === 'string') headers['@service-method'] = service.method;
 
 			}
 
 
-			var blob = this.codec.encode(data);
-			if (blob !== null) {
+			var payload = null;
+			if (data !== null) {
+				payload = this.codec.encode(data);
+			}
 
-				this.trigger('send', [ blob ]);
+
+			if (payload !== null) {
+
+				this.trigger('send', [ payload, headers ]);
 
 				return true;
 
@@ -378,53 +383,68 @@ console.log('Tunnel type', type);
 
 		},
 
-		receive: function(blob) {
+		receive: function(payload, headers) {
 
-			var data = this.codec.decode(blob);
-			if (data instanceof Object && typeof data._serviceId === 'string') {
-
-				var service = this.getService(data._serviceId);
-				var event   = data._serviceEvent  || null;
-				var method  = data._serviceMethod || null;
+			payload = payload instanceof Buffer ? payload : null;
+			headers = headers instanceof Object ? headers : null;
 
 
-				if (method !== null) {
+			var data     = null;
+			var service  = null;
+			var instance = null;
 
-					if (method.charAt(0) === '@') {
 
-						if (method === '@plug') {
-							_plug_service.call(this,   data._serviceId, service);
-						} else if (method === '@unplug') {
-							_unplug_service.call(this, data._serviceId, service);
-						}
+			if (headers !== null) {
 
-					} else if (service !== null && typeof service[method] === 'function') {
+				service = {};
+				service.id     = headers['@service-id']     || null;
+				service.event  = headers['@service-event']  || null;
+				service.method = headers['@service-method'] || null;
 
-						// Remove data frame service header
-						delete data._serviceId;
-						delete data._serviceMethod;
 
-						service[method](data);
+				if (service.id !== null) {
+					instance = this.getService(service.id);
+				}
 
+			}
+
+
+			if (payload !== null) {
+				data = this.codec.decode(payload);
+			}
+
+
+			if (data !== null && instance !== null) {
+
+				var event  = service.event;
+				var method = service.method;
+
+
+				if (method === '@plug' || method === '@unplug') {
+
+					if (method === '@plug') {
+						_plug_service.call(this,   service.id, instance);
+					} else if (method === '@unplug') {
+						_unplug_service.call(this, service.id, instance);
+					}
+
+				} else if (method !== null) {
+
+					if (typeof instance[method] === 'function') {
+						instance[method](data);
 					}
 
 				} else if (event !== null) {
 
-					if (service !== null && typeof service.trigger === 'function') {
-
-						// Remove data frame service header
-						delete data._serviceId;
-						delete data._serviceEvent;
-
-						service.trigger(event, [ data ]);
-
+					if (typeof instance.trigger === 'function') {
+						instance.trigger(event, [ data ]);
 					}
 
 				}
 
-			} else {
+			} else if (data !== null) {
 
-				this.trigger('receive', [ data ]);
+				this.trigger('receive', [ data, service ]);
 
 			}
 

@@ -30,7 +30,8 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 	var _decode_buffer = function(buffer) {
 
-console.log(buffer.toString('utf8'));
+		buffer = buffer.toString('utf8');
+
 
 		var fragment = this.__fragment;
 		var type     = this.type;
@@ -38,6 +39,20 @@ console.log(buffer.toString('utf8'));
 			chunk: null,
 			bytes: -1
 		};
+
+
+		var headers_length = buffer.indexOf('\r\n\r\n');
+		var headers_data   = buffer.substr(0, headers_length);
+		var payload_data   = buffer.substr(headers_length + 4);
+		var payload_length = buffer.length - headers_length - 4;
+
+
+console.log(headers_data, headers_data.length, headers_length);
+console.warn('~~~~~~~~~~~~~~');
+console.log(payload_data, payload_data.length, payload_length);
+
+
+
 
 
 		return result;
@@ -109,9 +124,13 @@ console.log(buffer.toString('utf8'));
 		 * PROTOCOL API
 		 */
 
-		send: function(blob, binary) {
+		send: function(payload, headers, binary) {
 
-			blob   = blob instanceof Buffer ? blob : null;
+			// TODO: Migrate this to correct payload, headers API
+			// (Buffer) payload, (Object) headers, (Boolean) binary
+
+
+			var blob = payload instanceof Buffer ? payload : null;
 			binary = binary === true;
 
 

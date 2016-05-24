@@ -442,9 +442,13 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 		 * PROTOCOL API
 		 */
 
-		send: function(blob, binary) {
+		send: function(payload, headers, binary) {
 
-			blob   = blob instanceof Buffer ? blob : null;
+			// TODO: Migrate this to correct payload, headers API
+			// (Buffer) payload, (Object) headers, (Boolean) binary
+
+
+			var blob = payload instanceof Buffer ? payload : null;
 			binary = binary === true;
 
 

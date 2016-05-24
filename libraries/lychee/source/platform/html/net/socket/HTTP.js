@@ -25,6 +25,54 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 
 	/*
+	 * HELPERS
+	 */
+
+	var _connect_socket = function(socket, protocol) {
+
+		var that = this;
+		if (that.__connection !== socket) {
+
+			// TODO: connect socket events
+
+			that.__connection = socket;
+			that.__protocol   = protocol;
+
+
+			setTimeout(function() {
+				that.trigger('connect');
+			}, 0);
+
+		}
+
+	};
+
+	var _disconnect_socket = function(socket, protocol) {
+
+		var that = this;
+		if (that.__connection === socket) {
+
+			// TODO: disconnect socket events
+
+			// socket.destroy();
+			protocol.close();
+
+
+			that.__connection = null;
+			that.__protocol   = null;
+
+
+			setTimeout(function() {
+				that.trigger('disconnect');
+			}, 0);
+
+		}
+
+	};
+
+
+
+	/*
 	 * IMPLEMENTATION
 	 */
 
@@ -70,23 +118,32 @@ lychee.define('lychee.net.socket.HTTP').tags({
 			connection = typeof connection === 'object' ? connection : null;
 
 
-			var that = this;
-			var url  = host.match(/:/g) !== null ? ('http://[' + host + ']:' + port) : ('http://' + host + ':' + port);
+			var that     = this;
+			var url      = host.match(/:/g) !== null ? ('http://[' + host + ']:' + port) : ('http://' + host + ':' + port);
+			var protocol = null;
 
 
 			if (host !== null && port !== null) {
 
 				if (connection !== null) {
 
-					var protocol = new _Protocol(_Protocol.TYPE.remote);
+					protocol   = new _Protocol(_Protocol.TYPE.remote);
+					connection = null;
 
-// TODO: lychee.net.Remote API
+					// TODO: Remote Socket API
+
+					// _connect_socket.call(that, connection, protocol);
+					// connection.resume();
 
 				} else {
 
-					var protocol = new _Protocol(_Protocol.TYPE.client);
+					protocol   = new _Protocol(_Protocol.TYPE.client);
+					connection = null;
 
-// TODO: lychee.net.Client API
+					// TODO: Client Socket API
+
+					// _connect_socket.call(that, connection, protocol);
+					// connection.connect({host, port});
 
 				}
 
@@ -94,20 +151,21 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 		},
 
-		send: function(data, binary) {
+		send: function(payload, headers, binary) {
 
-			data   = data instanceof Buffer ? data : null;
-			binary = binary === true;
+			payload = payload instanceof Buffer ? payload : null;
+			headers = headers instanceof Object ? headers : null;
+			binary  = binary === true;
 
 
-			if (data !== null) {
+			if (payload !== null) {
 
 				var connection = this.__connection;
 				var protocol   = this.__protocol;
 
 				if (connection !== null && protocol !== null) {
 
-					var chunk = protocol.send(data, binary);
+					var chunk = protocol.send(payload, headers, binary);
 					var enc   = binary === true ? 'binary' : 'utf8';
 
 					if (chunk !== null) {
@@ -122,14 +180,20 @@ lychee.define('lychee.net.socket.HTTP').tags({
 
 		disconnect: function() {
 
-			if (lychee.debug === true) {
-				console.log('lychee.net.socket.HTTP: Disconnected');
+			var connection = this.__connection;
+			var protocol   = this.__protocol;
+
+			if (connection !== null && protocol !== null) {
+
+				_disconnect_socket.call(this, connection, protocol);
+
+
+				return true;
+
 			}
 
 
-			if (this.__connection !== null) {
-				this.__connection.close();
-			}
+			return false;
 
 		}
 
