@@ -5,6 +5,45 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 	 * HELPERS
 	 */
 
+	var _encode_buffer = function(data, binary) {
+
+		var type           = this.type;
+		var buffer         = null;
+
+		var headers_data   = null;
+		var headers_length = 0;
+		var payload_data   = data;
+		var payload_length = data.length;
+
+
+		if (type === Class.TYPE.client) {
+
+		} else {
+
+
+		}
+
+
+		return buffer;
+
+	};
+
+	var _decode_buffer = function(buffer) {
+
+console.log(buffer.toString('utf8'));
+
+		var fragment = this.__fragment;
+		var type     = this.type;
+		var result   = {
+			chunk: null,
+			bytes: -1
+		};
+
+
+		return result;
+
+	};
+
 
 
 	/*
@@ -151,7 +190,7 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 			if (this.__isClosed === false) {
 
-				// TODO: Close method should do
+// TODO: Close method should create a close status buffer
 				// var buffer = new Buffer(4);
 
 				// buffer[0]  = 128 + 0x08;

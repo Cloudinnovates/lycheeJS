@@ -1,6 +1,6 @@
 
 lychee.define('lychee.net.Tunnel').requires([
-//	'lychee.net.socket.HTTP',
+	'lychee.net.socket.HTTP',
 //	'lychee.net.socket.REST',
 	'lychee.net.socket.WS',
 	'lychee.codec.BENCODE',
@@ -190,8 +190,8 @@ lychee.define('lychee.net.Tunnel').requires([
 
 	Class.TYPE = {
 		WS:   0,
-		REST: 1,
-		HTTP: 2
+		HTTP: 1,
+		TCP:  2
 	};
 
 
@@ -277,11 +277,12 @@ lychee.define('lychee.net.Tunnel').requires([
 				var type = this.type;
 				if (type === Class.TYPE.WS) {
 					this.__socket = new lychee.net.socket.WS();
-				} else if (type === Class.TYPE.REST) {
-					this.__socket = new lychee.net.socket.REST();
 				} else if (type === Class.TYPE.HTTP) {
 					this.__socket = new lychee.net.socket.HTTP();
 				}
+
+
+console.log('Tunnel type', type);
 
 
 				this.__socket.bind('connect', function() {
@@ -626,8 +627,11 @@ lychee.define('lychee.net.Tunnel').requires([
 
 					this.type = type;
 
-					this.disconnect();
-					this.connect();
+
+					if (this.__isConnected === true) {
+						this.disconnect();
+						this.connect();
+					}
 
 				}
 

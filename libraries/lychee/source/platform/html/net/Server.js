@@ -39,7 +39,7 @@ lychee.define('lychee.net.Server').tags({
 		var settings = lychee.extend({}, data);
 
 
-		this.codec = lychee.interfaceof(settings.codec, _JSON) ? settings.codec : _JSON;
+		this.codec = _JSON;
 		this.host  = 'localhost';
 		this.port  = 1337;
 		this.type  = Class.TYPE.WS;
@@ -49,8 +49,10 @@ lychee.define('lychee.net.Server').tags({
 		this.__server      = null;
 
 
+		this.setCodec(settings.codec);
 		this.setHost(settings.host);
 		this.setPort(settings.port);
+		this.setType(settings.type);
 
 
 		lychee.event.Emitter.call(this);
@@ -93,8 +95,8 @@ lychee.define('lychee.net.Server').tags({
 
 	Class.TYPE = {
 		WS:   0,
-		REST: 1,
-		HTTP: 2
+		HTTP: 1,
+		TCP:  2
 	};
 
 
@@ -219,6 +221,36 @@ lychee.define('lychee.net.Server').tags({
 		 * TUNNEL API
 		 */
 
+		setCodec: function(codec) {
+
+			codec = lychee.interfaceof(codec, _JSON) === true ? codec : null;
+
+
+			if (codec !== null) {
+
+				var oldcodec = this.codec;
+				if (oldcodec !== codec) {
+
+					this.codec = codec;
+
+
+					if (this.__isConnected === true) {
+						this.disconnect();
+						this.connect();
+					}
+
+				}
+
+
+				return true;
+
+			}
+
+
+			return false;
+
+		},
+
 		setHost: function(host) {
 
 			host = typeof host === 'string' ? host : null;
@@ -267,8 +299,11 @@ lychee.define('lychee.net.Server').tags({
 
 					this.type = type;
 
-					this.disconnect();
-					this.connect();
+
+					if (this.__isConnected === true) {
+						this.disconnect();
+						this.connect();
+					}
 
 				}
 
