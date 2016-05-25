@@ -1144,6 +1144,14 @@ lychee = typeof lychee !== 'undefined' ? lychee : (function(global) {
 						that.environment.define(definition);
 					});
 
+					var build_old = this.environment.definitions[this.environment.build] || null;
+					var build_new = environment.definitions[environment.build]           || null;
+
+					if (build_old === null && build_new !== null) {
+						this.environment.build = environment.build;
+						this.environment.type  = environment.type;
+					}
+
 
 					return true;
 
