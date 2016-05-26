@@ -28,14 +28,18 @@ lychee.define('lychee.event.Flow').includes([
 					if (that.___timeout === null) {
 
 						that.___timeout = setTimeout(function() {
+
 							that.___timeout = null;
 							_process_stack.call(that);
+
 						}, 0);
 
 					}
 
 				} else {
+
 					that.trigger('error', [ event ]);
+
 				}
 
 			});

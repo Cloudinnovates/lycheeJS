@@ -67,14 +67,14 @@ _fertilize() {
 if [ "$USER_WHO" != "root" ]; then
 
 	echo "You are not root.";
-	echo "Use \"sudo $0\"";
+	echo "Use \"sudo $0\".";
 
 	exit 1;
 
 elif [[ "$USER_WHO" == "root" && "$USER_LOG" == "root" ]]; then
 
 	echo "You are root.";
-	echo "Please exit the su shell and use \"sudo $0\"";
+	echo "Please exit su shell and use \"sudo $0\".";
 
 	exit 1;
 
