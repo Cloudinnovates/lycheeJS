@@ -64,7 +64,7 @@ _fertilize() {
 }
 
 
-if [ "$USER_WHO" != "root" ]; then
+if [[ "$USER_WHO" != "root" && "$SANDBOX_FLAG" == "false" ]]; then
 
 	echo "You are not root.";
 	echo "Use \"sudo $0\".";
@@ -80,75 +80,79 @@ elif [[ "$USER_WHO" == "root" && "$USER_LOG" == "root" ]]; then
 
 else
 
-	if [ "$OS" == "osx" ]; then
+	if [ "$SANDBOX_FLAG" == "false" ]; then
 
-		if [[ -x "/usr/local/bin/brew" ]]; then
-			PACKAGE_LIST="binutils coreutils libicns gnu-sed gnu-tar curl git";
-			PACKAGE_CMD="sudo -u $USER_LOG brew install $PACKAGE_LIST --with-default-names";
-		elif [[ -x "/opt/local/bin/port" ]]; then
-			PACKAGE_LIST="binutils coreutils libicns gsed zip unzip gnutar curl git";
-			PACKAGE_CMD="port install $PACKAGE_LIST";
+		if [ "$OS" == "osx" ]; then
+
+			if [[ -x "/usr/local/bin/brew" ]]; then
+				PACKAGE_LIST="binutils coreutils libicns gnu-sed gnu-tar curl git";
+				PACKAGE_CMD="sudo -u $USER_LOG brew install $PACKAGE_LIST --with-default-names";
+			elif [[ -x "/opt/local/bin/port" ]]; then
+				PACKAGE_LIST="binutils coreutils libicns gsed zip unzip gnutar curl git";
+				PACKAGE_CMD="port install $PACKAGE_LIST";
+			fi;
+
+		elif [ "$OS" == "linux" ]; then
+
+			if [[ -x "/usr/bin/apt-get" ]]; then
+				PACKAGE_LIST="bash binutils binutils-multiarch coreutils icnsutils sed zip unzip tar curl git";
+				PACKAGE_CMD="apt-get -y install $PACKAGE_LIST";
+			elif [[ -x "/usr/bin/dnf" ]]; then
+				PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git";
+				PACKAGE_CMD="dnf -y install $PACKAGE_LIST";
+			elif [[ -x "/usr/bin/yum" ]]; then
+				PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git";
+				PACKAGE_CMD="yum --setopt=alwaysprompt=no install $PACKAGE_LIST";
+			elif [[ -x "/usr/bin/pacman" ]]; then
+				PACKAGE_LIST="bash binutils coreutils libicns sed zip unzip tar curl git";
+				PACKAGE_CMD="pacman -S --noconfirm $PACKAGE_LIST";
+			elif [[ -x "/usr/bin/zypper" ]]; then
+				PACKAGE_LIST="bash binutils coreutils icns-utils sed zip unzip tar curl git";
+				PACKAGE_CMD="zypper --non-interactive install $PACKAGE_LIST";
+			fi;
+
 		fi;
 
-	elif [ "$OS" == "linux" ]; then
 
-		if [[ -x "/usr/bin/apt-get" ]]; then
-			PACKAGE_LIST="bash binutils binutils-multiarch coreutils icnsutils sed zip unzip tar curl git";
-			PACKAGE_CMD="apt-get -y install $PACKAGE_LIST";
-		elif [[ -x "/usr/bin/dnf" ]]; then
-			PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git";
-			PACKAGE_CMD="dnf -y install $PACKAGE_LIST";
-		elif [[ -x "/usr/bin/yum" ]]; then
-			PACKAGE_LIST="bash binutils binutils-arm-linux-gnu binutils-x86_64-linux-gnu coreutils libicns-utils sed zip unzip tar curl git";
-			PACKAGE_CMD="yum --setopt=alwaysprompt=no install $PACKAGE_LIST";
-		elif [[ -x "/usr/bin/pacman" ]]; then
-			PACKAGE_LIST="bash binutils coreutils libicns sed zip unzip tar curl git";
-			PACKAGE_CMD="pacman -S --noconfirm $PACKAGE_LIST";
-		elif [[ -x "/usr/bin/zypper" ]]; then
-			PACKAGE_LIST="bash binutils coreutils icns-utils sed zip unzip tar curl git";
-			PACKAGE_CMD="zypper --non-interactive install $PACKAGE_LIST";
-		fi;
+		echo "";
+		echo "> Installing Dependencies ...";
 
-	fi;
+		if [ "$PACKAGE_CMD" != "" ]; then
 
+			echo -e "\t$PACKAGE_CMD";
 
-	echo "";
-	echo "> Installing Dependencies ...";
+			$PACKAGE_CMD 2>&1 > /dev/null;
 
-	if [ "$PACKAGE_CMD" != "" ]; then
+			if [ "$?" == "0" ]; then
 
-		echo -e "\t$PACKAGE_CMD";
+				echo "> DONE";
 
-		$PACKAGE_CMD 2>&1 > /dev/null;
+			else
+				echo "> FAIL";
+				echo "";
+				echo "Installation command failed, please verify that this is working (don't forget to sudo):";
+				echo "$PACKAGE_CMD";
+				echo "";
 
-		if [ "$?" == "0" ]; then
+				exit 1;
 
-			echo "> DONE";
+			fi;
+
 
 		else
+
 			echo "> FAIL";
+
 			echo "";
-			echo "Installation command failed, please verify that this is working (don't forget to sudo):";
-			echo "$PACKAGE_CMD";
+			echo "Your system is not officially supported.";
+			echo "Feel free to modify this script to add the dependencies!";
+			echo "";
+			echo "Also, please let us know about this at https://github.com/Artificial-Engineering/lycheeJS/issues";
 			echo "";
 
 			exit 1;
 
 		fi;
-
-
-	else
-
-		echo "> FAIL";
-
-		echo "";
-		echo "Your system is not officially supported.";
-		echo "Feel free to modify this script to add the dependencies!";
-		echo "";
-		echo "Also, please let us know about this at https://github.com/Artificial-Engineering/lycheeJS/issues";
-		echo "";
-
-		exit 1;
 
 	fi;
 
