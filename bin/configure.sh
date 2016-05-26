@@ -221,6 +221,7 @@ else
 		# Make command line tools explicitely executable
 
 		chmod +x ./projects/*/harvester.js;
+		chmod +x ./projects/*/bin/*.sh;
 
 		chmod 0777 ./bin;
 		chmod -R 0777 ./bin/harvester;
