@@ -113,45 +113,6 @@ lychee.define('fertilizer.data.Shell').tags({
 
 				});
 
-			} else {
-
-				try {
-
-					var stdout = _child_process.execFileSync(file, args, {
-						cwd: path
-					}).toString();
-
-
-					that.__stack.push({
-						args:   args,
-						file:   file,
-						path:   path,
-						stdout: stdout,
-						stderr: ''
-					});
-
-
-					if (stdout.match(/SUCCESS/)) {
-						return true;
-					} else {
-						return false;
-					}
-
-				} catch(error) {
-
-					that.__stack.push({
-						args:   args,
-						file:   file,
-						path:   path,
-						stdout: (error.stdout || '').toString(),
-						stderr: (error.stderr || '').toString()
-					});
-
-
-					return false;
-
-				}
-
 			}
 
 		},

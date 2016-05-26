@@ -167,17 +167,20 @@ lychee.define('fertilizer.template.html-nwjs.Application').includes([
 				console.log('fertilizer: PACKAGE ' + sandbox + ' ' + name);
 
 
-				var result = shell.exec('/bin/runtime/html-nwjs/package.sh ' + sandbox + ' ' + name);
-				if (result === true) {
+				shell.exec('/bin/runtime/html-nwjs/package.sh ' + sandbox + ' ' + name, function(result) {
 
-					oncomplete(true);
+					if (result === true) {
 
-				} else {
+						oncomplete(true);
 
-					shell.trace();
-					oncomplete(false);
+					} else {
 
-				}
+						shell.trace();
+						oncomplete(false);
+
+					}
+
+				});
 
 			} else {
 

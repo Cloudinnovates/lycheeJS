@@ -84,10 +84,10 @@ var _settings = (function() {
 
 	var raw_arg0 = process.argv[2] || '';
 	var raw_arg1 = process.argv[3] || '';
-
-
 	var pkg_path = root + raw_arg1 + '/lychee.pkg';
-	if (fs.existsSync(pkg_path) === true) {
+
+
+	if (raw_arg0 !== '' && raw_arg1 !== '' && fs.existsSync(pkg_path) === true) {
 
 		settings.project = raw_arg1;
 
@@ -114,7 +114,7 @@ var _settings = (function() {
 
 		}
 
-	} else if (fs.existsSync(root + raw_arg1) === true) {
+	} else if (raw_arg1 !== '' && fs.existsSync(root + raw_arg1) === true) {
 
 		settings.project    = raw_arg1;
 		settings.identifier = null;

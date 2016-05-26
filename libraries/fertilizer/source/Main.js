@@ -233,55 +233,53 @@ lychee.define('fertilizer.Main').requires([
 
 				template.bind('configure-project', function(oncomplete) {
 
-					var shell  = this.shell;
-					var result = shell.exec(project + '/bin/configure.sh');
-					if (result === true) {
+					this.shell.exec(project + '/bin/configure.sh', function(result) {
 
-						console.info('fertilizer: CONFIGURE-PROJECT SUCCESS');
+						if (result === true) {
+							console.info('fertilizer: CONFIGURE-PROJECT SUCCESS');
+						} else {
+							console.warn('fertilizer: CONFIGURE-PROJECT FAILURE');
+						}
+
 						oncomplete(true);
 
-					} else {
-
-						console.warn('fertilizer: CONFIGURE-PROJECT FAILURE');
-						oncomplete(true);
-
-					}
+					});
 
 				}, template);
 
 				template.bind('build-project', function(oncomplete) {
 
-					var shell  = this.shell;
-					var result = shell.exec(project + '/bin/build.sh');
-					if (result === true) {
+					this.shell.exec(project + '/bin/build.sh', function(result) {
 
-						console.info('fertilizer: BUILD-PROJECT SUCCESS');
+						if (result === true) {
+							console.info('fertilizer: BUILD-PROJECT SUCCESS');
+						} else {
+							console.warn('fertilizer: BUILD-PROJECT FAILURE');
+						}
+
 						oncomplete(true);
 
-					} else {
-
-						console.warn('fertilizer: BUILD-PROJECT FAILURE');
-						oncomplete(true);
-
-					}
+					});
 
 				}, template);
 
 				template.bind('package-project', function(oncomplete) {
 
-					var shell  = this.shell;
-					var result = shell.exec(project + '/bin/package.sh');
-					if (result === true) {
+					this.shell.exec(project + '/bin/package.sh', function(result) {
 
-						console.info('fertilizer: PACKAGE-PROJECT SUCCESS');
-						oncomplete(true);
+						if (result === true) {
 
-					} else {
+							console.info('fertilizer: PACKAGE-PROJECT SUCCESS');
+							oncomplete(true);
 
-						console.warn('fertilizer: PACKAGE-PROJECT FAILURE');
-						oncomplete(true);
+						} else {
 
-					}
+							console.warn('fertilizer: PACKAGE-PROJECT FAILURE');
+							oncomplete(true);
+
+						}
+
+					});
 
 				}, template);
 
@@ -302,6 +300,7 @@ lychee.define('fertilizer.Main').requires([
 
 
 				template.init();
+
 
 				return true;
 
