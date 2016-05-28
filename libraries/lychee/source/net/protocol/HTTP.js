@@ -5,18 +5,19 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 	 * HELPERS
 	 */
 
-	var _encode_buffer = function(data, binary) {
+	var _encode_buffer = function(payload, headers, binary) {
 
 		var type           = this.type;
 		var buffer         = null;
 
 		var headers_data   = null;
 		var headers_length = 0;
-		var payload_data   = data;
-		var payload_length = data.length;
+		var payload_data   = payload;
+		var payload_length = payload.length;
 
 
 		if (type === Class.TYPE.client) {
+
 
 		} else {
 
@@ -35,10 +36,16 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 		var fragment = this.__fragment;
 		var type     = this.type;
-		var result   = {
-			chunk: null,
-			bytes: -1
+		var chunk    = {
+			bytes:   -1,
+			headers: {},
+			payload: null
 		};
+
+
+		if (buffer.indexOf('\r\n\r\n') === -1) {
+			return chunk;
+		}
 
 
 		var headers_length = buffer.indexOf('\r\n\r\n');
@@ -47,15 +54,36 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 		var payload_length = buffer.length - headers_length - 4;
 
 
-console.log(headers_data, headers_data.length, headers_length);
-console.warn('~~~~~~~~~~~~~~');
-console.log(payload_data, payload_data.length, payload_length);
+		headers_data.split('\r\n').forEach(function(line) {
+
+			var tmp = line.trim();
+			if (tmp.indexOf(':') !== -1) {
+
+				var key = (tmp.split(':')[0] || '').trim().toLowerCase();
+				var val = (tmp.split(':')[1] || '').trim();
+
+				if (key.length > 0) {
+					chunk.headers[key] = val;
+				}
+
+			}
+
+		});
+
+
+console.log(chunk.headers);
+
+// console.log(headers_data, headers_data.length, headers_length);
+// console.warn('~~~~~~~~~~~~~~');
+// console.log(payload_data, payload_data.length, payload_length);
+
+
+		chunk.headers = Object.keys(chunk.headers).length > 0 ? chunk.headers : null;
 
 
 
 
-
-		return result;
+		return chunk;
 
 	};
 
@@ -126,18 +154,15 @@ console.log(payload_data, payload_data.length, payload_length);
 
 		send: function(payload, headers, binary) {
 
-			// TODO: Migrate this to correct payload, headers API
-			// (Buffer) payload, (Object) headers, (Boolean) binary
+			payload = payload instanceof Buffer ? payload : null;
+			headers = headers instanceof Object ? headers : null;
+			binary  = binary === true;
 
 
-			var blob = payload instanceof Buffer ? payload : null;
-			binary = binary === true;
-
-
-			if (blob !== null) {
+			if (payload !== null) {
 
 				if (this.__isClosed === false) {
-					return _encode_buffer.call(this, blob, binary);
+					return _encode_buffer.call(this, payload, headers, binary);
 				}
 
 			}
@@ -172,21 +197,21 @@ console.log(payload_data, payload_data.length, payload_length);
 					buf = tmp;
 
 
-					var result = _decode_buffer.call(this, buf);
+					var chunk = _decode_buffer.call(this, buf);
 
-					while (result.bytes !== -1) {
+					while (chunk.bytes !== -1) {
 
-						if (result.chunk !== null) {
-							chunks.push(result.chunk);
+						if (chunk.payload !== null) {
+							chunks.push(chunk);
 						}
 
 
-						tmp = new Buffer(buf.length - result.bytes);
-						buf.copy(tmp, 0, result.bytes);
+						tmp = new Buffer(buf.length - chunk.bytes);
+						buf.copy(tmp, 0, chunk.bytes);
 						buf = tmp;
 
-						result = null;
-						result = _decode_buffer.call(this, buf);
+						chunk = null;
+						chunk = _decode_buffer.call(this, buf);
 
 					}
 
