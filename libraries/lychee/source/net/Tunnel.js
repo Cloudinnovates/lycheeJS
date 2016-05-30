@@ -341,10 +341,10 @@ lychee.define('lychee.net.Tunnel').requires([
 
 		},
 
-		send: function(data, service) {
+		send: function(data, headers) {
 
 			data    = data instanceof Object    ? data    : null;
-			service = service instanceof Object ? service : null;
+			headers = headers instanceof Object ? headers : {};
 
 
 			if (data === null) {
@@ -352,16 +352,16 @@ lychee.define('lychee.net.Tunnel').requires([
 			}
 
 
-			var headers = null;
-			if (service !== null) {
+			if (typeof headers.id     === 'string') headers['@service-id']     = headers.id;
+			if (typeof headers.event  === 'string') headers['@service-event']  = headers.event;
+			if (typeof headers.method === 'string') headers['@service-method'] = headers.method;
 
-				headers = {};
 
-				if (typeof service.id     === 'string') headers['@service-id']     = service.id;
-				if (typeof service.event  === 'string') headers['@service-event']  = service.event;
-				if (typeof service.method === 'string') headers['@service-method'] = service.method;
-
-			}
+			// TODO: Figure out a smarter way to have a clean send() API
+			// that also works across all network protocols and is in sync with receive()
+			delete headers.id;
+			delete headers.event;
+			delete headers.method;
 
 
 			var payload = null;
@@ -386,46 +386,28 @@ lychee.define('lychee.net.Tunnel').requires([
 		receive: function(payload, headers) {
 
 			payload = payload instanceof Buffer ? payload : null;
-			headers = headers instanceof Object ? headers : null;
+			headers = headers instanceof Object ? headers : {};
 
 
-			var data     = null;
-			var service  = null;
-			var instance = null;
+			var id     = headers['@service-id']     || null;
+			var event  = headers['@service-event']  || null;
+			var method = headers['@service-method'] || null;
 
-
-			if (headers !== null) {
-
-				service = {};
-				service.id     = headers['@service-id']     || null;
-				service.event  = headers['@service-event']  || null;
-				service.method = headers['@service-method'] || null;
-
-
-				if (service.id !== null) {
-					instance = this.getService(service.id);
-				}
-
-			}
-
-
+			var data = null;
 			if (payload !== null) {
 				data = this.codec.decode(payload);
 			}
 
 
-			if (data !== null && instance !== null) {
-
-				var event  = service.event;
-				var method = service.method;
-
+			var instance = this.getService(id);
+			if (instance !== null && data !== null) {
 
 				if (method === '@plug' || method === '@unplug') {
 
 					if (method === '@plug') {
-						_plug_service.call(this,   service.id, instance);
+						_plug_service.call(this,   id, instance);
 					} else if (method === '@unplug') {
-						_unplug_service.call(this, service.id, instance);
+						_unplug_service.call(this, id, instance);
 					}
 
 				} else if (method !== null) {
@@ -442,9 +424,9 @@ lychee.define('lychee.net.Tunnel').requires([
 
 				}
 
-			} else if (data !== null) {
+			} else {
 
-				this.trigger('receive', [ data, service ]);
+				this.trigger('receive', [ data, headers ]);
 
 			}
 

@@ -103,11 +103,11 @@ lychee.define('lychee.net.socket.WS').tags({
 		var that = this;
 		if (that.__connection === socket) {
 
-			socket.removeListener('data');
-			socket.removeListener('error');
-			socket.removeListener('timeout');
-			socket.removeListener('close');
-			socket.removeListener('end');
+			socket.removeAllListeners('data');
+			socket.removeAllListeners('error');
+			socket.removeAllListeners('timeout');
+			socket.removeAllListeners('close');
+			socket.removeAllListeners('end');
 
 			socket.destroy();
 			protocol.close();

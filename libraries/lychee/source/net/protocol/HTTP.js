@@ -5,6 +5,19 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 	 * HELPERS
 	 */
 
+	var _uppercase = function(str) {
+
+		var tmp = str.split('-');
+
+		for (var t = 0, tl = tmp.length; t < tl; t++) {
+			var ch = tmp[t];
+			tmp[t] = ch.charAt(0).toUpperCase() + ch.substr(1);
+		}
+
+		return tmp.join('-');
+
+	};
+
 	var _encode_buffer = function(payload, headers, binary) {
 
 		var type           = this.type;
@@ -18,9 +31,82 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 		if (type === Class.TYPE.client) {
 
+			var url            = headers['url']             || null;
+			var method         = headers['method']          || null;
+			var service_id     = headers['@service-id']     || null;
+			var service_event  = headers['@service-event']  || null;
+			var service_method = headers['@service-method'] || null;
+
+
+			if (service_id !== null) {
+
+				if (service_method !== null) {
+
+					method = 'GET';
+					url    = '/api/' + service_id + '/' + service_method;
+
+				} else if (service_event !== null) {
+
+					method = 'POST';
+					url    = '/api/' + service_id + '/' + service_event;
+
+				}
+
+			}
+
+
+			if (url !== null && method !== null) {
+				headers_data = method + ' ' + url + ' HTTP/1.1\r\n';
+			} else {
+				headers_data = 'GET * HTTP/1.1\r\n';
+			}
+
+
+			headers_data += 'Connection: keep-alive\r\n';
+			headers_data += 'Content-Length: ' + payload_length + '\r\n';
+
+			for (var key in headers) {
+				if (key.charAt(0) === '@') continue;
+				headers_data += '' + _uppercase(key) + ': ' + headers[key] + '\r\n';
+			}
+
+			headers_data  += '\r\n';
+			headers_length = headers_data.length;
 
 		} else {
 
+			var status = headers['status'] || Class.STATUS.normal_okay;
+
+
+			headers_data  = 'HTTP/1.1 ' + status + '\r\n';
+			headers_data += 'Connection: keep-alive\r\n';
+			headers_data += 'Content-Length: ' + payload_length + '\r\n';
+
+			for (var key in headers) {
+				if (key.charAt(0) === '@') continue;
+				headers_data += '' + _uppercase(key) + ': ' + headers[key] + '\r\n';
+			}
+
+			headers_data  += '\r\n';
+			headers_length = headers_data.length;
+
+		}
+
+
+		var content_type = headers['content-type'] || 'text/plain';
+		if (/text\//g.test(content_type) === true) {
+
+			buffer = new Buffer(headers_length + payload_length + 2);
+			buffer.write(headers_data, 0);
+			payload.copy(buffer, headers_length);
+			buffer.write('\r\n', headers_length + payload_length);
+
+		} else {
+
+			buffer = new Buffer(headers_length + payload_length + 2);
+			buffer.write(headers_data, 0);
+			payload.copy(buffer, headers_length);
+			buffer.write('\r\n', headers_length + payload_length);
 
 		}
 
@@ -53,6 +139,12 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 		var payload_data   = buffer.substr(headers_length + 4);
 		var payload_length = buffer.length - headers_length - 4;
 
+		var i_end = payload_data.indexOf('\r\n\r\n');
+		if (i_end !== -1) {
+			payload_data   = payload_data.substr(0, i_end);
+			payload_length = payload_data.length;
+		}
+
 
 		headers_data.split('\r\n').forEach(function(line) {
 
@@ -62,8 +154,49 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 				var key = (tmp.split(':')[0] || '').trim().toLowerCase();
 				var val = (tmp.split(':')[1] || '').trim();
 
-				if (key.length > 0) {
+				if (/host|origin|connection|upgrade|content-type|accept-encoding|e-tag|expires|last-modified/g.test(key) === true) {
 					chunk.headers[key] = val;
+				} else if (/access-control/g.test(key) === true) {
+					chunk.headers[key] = val;
+				}
+
+			} else if (/[0-9]{3}/g.test(tmp.substr(0, 3)) === true) {
+
+				chunk.headers['status'] = tmp.split(' ')[0];
+
+			} else if (/OPTIONS|GET|POST/g.test(tmp) === true) {
+
+				var tmp2   = tmp.split(' ');
+				var method = (tmp2[0] || '').trim() || null;
+				var url    = (tmp2[1] || '').trim() || null;
+
+				if (method !== null && url !== null) {
+
+					chunk.headers['method'] = method;
+					chunk.headers['url']    = url;
+
+				}
+
+
+				if (url.substr(0, 5) === '/api/') {
+
+					var tmp3 = url.split('/');
+					if (tmp3.length === 4) {
+
+						if (method === 'GET') {
+
+							chunk.headers['@service-id']     = tmp3[2];
+							chunk.headers['@service-method'] = tmp3[3];
+
+						} else if (method === 'POST') {
+
+							chunk.headers['@service-id']    = tmp3[2];
+							chunk.headers['@service-event'] = tmp3[3];
+
+						}
+
+					}
+
 				}
 
 			}
@@ -71,16 +204,29 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 		});
 
 
-console.log(chunk.headers);
+		var check = chunk.headers['method'] || null;
+		if (check === 'GET') {
 
-// console.log(headers_data, headers_data.length, headers_length);
-// console.warn('~~~~~~~~~~~~~~');
-// console.log(payload_data, payload_data.length, payload_length);
+			chunk.bytes   = headers_data.length + payload_data.length + 4;
+			chunk.payload = new Buffer('', 'utf8');
 
+		} else if (check === 'OPTIONS') {
 
-		chunk.headers = Object.keys(chunk.headers).length > 0 ? chunk.headers : null;
+			chunk.bytes   = headers_data.length + payload_data.length + 4;
+			chunk.payload = new Buffer('', 'utf8');
 
+		} else if (check === 'POST') {
 
+			chunk.bytes   = headers_data.length + payload_data.length + 4;
+			chunk.payload = new Buffer(payload_data, 'utf8');
+
+		} else {
+
+			chunk.bytes   = buffer.length;
+			chunk.headers = null;
+			chunk.payload = null;
+
+		}
 
 
 		return chunk;
@@ -124,7 +270,8 @@ console.log(chunk.headers);
 	Class.STATUS = {
 
 		// RFC7231
-		normal_okay:     '200 Okay',
+		normal_continue: '100 Continue',
+		normal_okay:     '200 OK',
 		protocol_error:  '400 Bad Request',
 		message_too_big: '413 Payload Too Large',
 		not_found:       '404 Not Found',

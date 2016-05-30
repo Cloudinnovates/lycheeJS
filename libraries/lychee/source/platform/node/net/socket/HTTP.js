@@ -41,22 +41,7 @@ lychee.define('lychee.net.socket.HTTP').tags({
 				if (chunks.length > 0) {
 
 					for (var c = 0, cl = chunks.length; c < cl; c++) {
-
-						var chunk = chunks[c];
-// TODO: Implement intelligent close frames
-						if (chunk.payload[0] === 136 && false) {
-
-							that.send(chunk.payload, chunk.headers, true);
-							that.disconnect();
-
-							return;
-
-						} else {
-
-							that.trigger('receive', [ chunk.payload, chunk.headers ]);
-
-						}
-
+						that.trigger('receive', [ chunks[c].payload, chunks[c].headers ]);
 					}
 
 				}
@@ -82,11 +67,6 @@ lychee.define('lychee.net.socket.HTTP').tags({
 			});
 
 
-			if (lychee.debug === true) {
-				console.log('lychee.net.socket.HTTP: Connect');
-			}
-
-
 			that.__connection = socket;
 			that.__protocol   = protocol;
 
@@ -104,19 +84,14 @@ lychee.define('lychee.net.socket.HTTP').tags({
 		var that = this;
 		if (that.__connection === socket) {
 
-			socket.removeListener('data');
-			socket.removeListener('error');
-			socket.removeListener('timeout');
-			socket.removeListener('close');
-			socket.removeListener('end');
+			socket.removeAllListeners('data');
+			socket.removeAllListeners('error');
+			socket.removeAllListeners('timeout');
+			socket.removeAllListeners('close');
+			socket.removeAllListeners('end');
 
 			socket.destroy();
 			protocol.close();
-
-
-			if (lychee.debug === true) {
-				console.log('lychee.net.socket.HTTP: Disconnect');
-			}
 
 
 			that.__connection = null;
