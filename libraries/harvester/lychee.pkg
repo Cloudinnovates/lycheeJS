@@ -137,6 +137,9 @@
 				"Server": [
 					"js"
 				],
+				"Tunnel": [
+					"js"
+				],
 				"protocol": {
 					"HTTP": [
 						"js"

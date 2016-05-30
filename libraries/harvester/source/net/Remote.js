@@ -2,10 +2,11 @@
 lychee.define('harvester.net.Remote').requires([
 	'harvester.net.protocol.HTTP'
 ]).includes([
-	'lychee.net.Tunnel'
+	'harvester.net.Tunnel'
 ]).exports(function(lychee, global, attachments) {
 
 	var _Protocol = lychee.import('harvester.net.protocol.HTTP');
+	var _Tunnel   = lychee.import('harvester.net.Tunnel');
 
 
 
@@ -28,7 +29,7 @@ lychee.define('harvester.net.Remote').requires([
 		};
 
 
-		lychee.net.Tunnel.call(this, settings);
+		_Tunnel.call(this, settings);
 
 		settings = null;
 
@@ -70,7 +71,7 @@ lychee.define('harvester.net.Remote').requires([
 
 		serialize: function() {
 
-			var data = lychee.net.Tunnel.prototype.serialize.call(this);
+			var data = _Tunnel.prototype.serialize.call(this);
 			data['constructor'] = 'harvester.net.Remote';
 
 
