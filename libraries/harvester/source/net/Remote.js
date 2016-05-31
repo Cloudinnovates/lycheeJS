@@ -74,6 +74,12 @@ lychee.define('harvester.net.Remote').requires([
 			}
 
 
+			var event = headers['event'] || null;
+			if (event === 'error') {
+				headers['status'] = '400 Bad Request';
+			}
+
+
 			if (/@plug|@unplug/g.test(headers.method) === false) {
 				return _Tunnel.prototype.send.call(this, data, headers);
 			}

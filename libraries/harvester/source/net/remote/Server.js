@@ -157,6 +157,10 @@ lychee.define('harvester.net.remote.Server').includes([
 
 				}
 
+			} else {
+
+				this.report('FAILURE: No identifier');
+
 			}
 
 		}
