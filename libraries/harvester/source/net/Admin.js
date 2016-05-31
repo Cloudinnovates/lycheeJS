@@ -1,6 +1,7 @@
 
 lychee.define('harvester.net.Admin').requires([
 	'harvester.net.Remote',
+	'harvester.net.remote.Library',
 	'harvester.net.remote.Project',
 	'lychee.codec.JSON'
 ]).includes([
@@ -8,6 +9,7 @@ lychee.define('harvester.net.Admin').requires([
 ]).exports(function(lychee, global, attachments) {
 
 	var _JSON    = lychee.import('lychee.codec.JSON');
+	var _Library = lychee.import('harvester.net.remote.Library');
 	var _Project = lychee.import('harvester.net.remote.Project');
 	var _Remote  = lychee.import('harvester.net.Remote');
 	var _Server  = lychee.import('lychee.net.Server');
@@ -39,6 +41,7 @@ lychee.define('harvester.net.Admin').requires([
 
 		this.bind('connect', function(remote) {
 
+			remote.addService(new _Library(remote));
 			remote.addService(new _Project(remote));
 
 

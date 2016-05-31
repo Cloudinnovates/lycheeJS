@@ -28,7 +28,7 @@ lychee.define('lychee.app.Main').requires([
 
 		if (proto.match(/app|file/g)) {
 
-			_api_origin = 'http://harvester.lycheejs.org:8080';
+			_api_origin = 'http://harvester.artificial.engineering:4848';
 
 		} else if (proto.match(/http|https/g)) {
 
@@ -41,7 +41,7 @@ lychee.define('lychee.app.Main').requires([
 
 	var _load_api = function(url, callback, scope) {
 
-		url = typeof url === 'string' ? url : '/api/Server?identifier=boilerplate';
+		url = typeof url === 'string' ? url : '/api/Server/connect?identifier=boilerplate';
 
 
 		var config = new Config(_api_origin + url);
