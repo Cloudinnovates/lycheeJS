@@ -176,7 +176,14 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 				if (url.substr(0, 5) === '/api/') {
 
-					var tmp3 = url.split('/');
+					var tmp3 = [];
+
+					if (url.indexOf('?') !== -1) {
+						tmp3 = url.split('?')[0].split('/');
+					} else {
+						tmp3 = url.split('/');
+					}
+
 					if (tmp3.length === 4) {
 
 						if (method === 'GET') {

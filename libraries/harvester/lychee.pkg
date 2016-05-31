@@ -137,19 +137,19 @@
 				"Server": [
 					"js"
 				],
-				"Server__OLD": [
-					"js"
-				],
 				"remote": {
+					"Library": [
+						"js"
+					],
 					"Project": [
+						"js"
+					],
+					"Server": [
 						"js"
 					]
 				}
 			},
 			"serve": {
-				"API": [
-					"js"
-				],
 				"File": [
 					"js"
 				],
@@ -157,13 +157,7 @@
 					"js"
 				],
 				"api": {
-					"Library": [
-						"js"
-					],
 					"Profile": [
-						"js"
-					],
-					"Server": [
 						"js"
 					]
 				}

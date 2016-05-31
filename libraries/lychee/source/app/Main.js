@@ -23,16 +23,21 @@ lychee.define('lychee.app.Main').requires([
 
 	(function(location) {
 
-		var origin = location.origin || '';
-		var proto  = origin.split(':')[0];
+		var hostname = location.hostname || '';
+		var origin   = location.origin   || '';
+		var proto    = origin.split(':')[0];
 
 		if (proto.match(/app|file/g)) {
 
 			_api_origin = 'http://harvester.artificial.engineering:4848';
 
+		} else if (hostname === 'localhost') {
+
+			_api_origin = 'http://localhost:4848';
+
 		} else if (proto.match(/http|https/g)) {
 
-			_api_origin = location.origin;
+			_api_origin = location.origin + ':4848';
 
 		}
 
@@ -44,7 +49,12 @@ lychee.define('lychee.app.Main').requires([
 		url = typeof url === 'string' ? url : '/api/server/connect?identifier=boilerplate';
 
 
-		var config = new Config(_api_origin + url);
+		if (/^http(s)\:\/\//g.test(url) === false) {
+			url = _api_origin + url;
+		}
+
+
+		var config = new Config(url);
 
 		config.onload = function(result) {
 			callback.call(scope, result === true ? this.buffer : null);

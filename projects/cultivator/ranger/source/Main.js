@@ -95,8 +95,8 @@ lychee.define('app.Main').requires([
 
 
 			var that    = this;
-			var config  = new Config('http://localhost:4848/api/Project?timestamp=' + Date.now());
-			var profile = new Config('http://localhost:4848/api/Profile?timestamp=' + Date.now());
+			var config  = new Config('http://localhost:4848/api/project/index?timestamp=' + Date.now());
+			var profile = new Config('http://localhost:4848/api/profile/index?timestamp=' + Date.now());
 
 
 			config.onload = function(result) {

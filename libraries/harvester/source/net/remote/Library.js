@@ -61,17 +61,11 @@ lychee.define('harvester.net.remote.Library').requires([
 
 				tunnel.send({
 					message: 'SUCCESS: Started server ("' + identifier + '")'
-				}, {
-					status: '200 OK'
 				});
 
 			} else {
 
-				tunnel.send({
-					message: 'FAILURE: No server ("' + identifier + '")'
-				}, {
-					status: '404 Not Found'
-				});
+				this.report('FAILURE: No server ("' + identifier + '")');
 
 			}
 
@@ -95,17 +89,11 @@ lychee.define('harvester.net.remote.Library').requires([
 
 				tunnel.send({
 					message: 'SUCCESS: Stopped server ("' + identifier + '")'
-				}, {
-					status: '200 OK'
 				});
 
 			} else {
 
-				tunnel.send({
-					message: 'FAILURE: No server ("' + identifier + '")'
-				}, {
-					status: '404 Not Found'
-				});
+				this.report('FAILURE: No server ("' + identifier + '")');
 
 			}
 
@@ -157,12 +145,10 @@ lychee.define('harvester.net.remote.Library').requires([
 
 		index: function(data) {
 
-			var main   = lychee.import('MAIN');
 			var tunnel = this.tunnel;
+			if (tunnel !== null && _MAIN !== null) {
 
-			if (main !== null && tunnel !== null) {
-
-				var libraries = Object.values(main._libraries).filter(function(library) {
+				var libraries = Object.values(_MAIN._libraries).filter(function(library) {
 					return /cultivator/g.test(library.identifier) === false;
 				}).map(_serialize);
 
