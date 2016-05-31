@@ -61,8 +61,7 @@ lychee.define('harvester.net.Admin').requires([
 				} else {
 
 					remote.send({
-//						message:      'effective. Power لُلُصّبُلُلصّبُررً ॣ ॣh ॣ ॣ 冗',
-						message: 'Please go away. #kthxbye'
+						'message': 'Please go away. 凸(｀⌒´メ)凸'
 					}, {
 						'status': '404 Not Found'
 					});

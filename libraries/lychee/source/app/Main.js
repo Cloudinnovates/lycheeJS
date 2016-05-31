@@ -41,7 +41,7 @@ lychee.define('lychee.app.Main').requires([
 
 	var _load_api = function(url, callback, scope) {
 
-		url = typeof url === 'string' ? url : '/api/Server/connect?identifier=boilerplate';
+		url = typeof url === 'string' ? url : '/api/server/connect?identifier=boilerplate';
 
 
 		var config = new Config(_api_origin + url);

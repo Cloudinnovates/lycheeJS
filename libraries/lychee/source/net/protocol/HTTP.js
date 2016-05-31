@@ -205,8 +205,33 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 		var check = chunk.headers['method'] || null;
 		if (check === 'GET') {
 
-			chunk.bytes   = headers_data.length + payload_data.length + 4;
-			chunk.payload = new Buffer('', 'utf8');
+			var tmp4 = chunk.headers['url'] || '';
+			if (tmp4.indexOf('?') !== -1) {
+
+				var tmp5 = tmp4.split('?')[1].split('&');
+				var tmp6 = {};
+
+				tmp5.forEach(function(str) {
+
+					var key = str.split('=')[0] || '';
+					var val = str.split('=')[1] || '';
+
+					if (key !== '' && val !== '') {
+						tmp6[key] = val;
+					}
+
+				});
+
+
+				chunk.bytes   = headers_data.length + payload_data.length + 4;
+				chunk.payload = new Buffer(JSON.stringify(tmp6), 'utf8');
+
+			} else {
+
+				chunk.bytes   = headers_data.length + payload_data.length + 4;
+				chunk.payload = new Buffer('', 'utf8');
+
+			}
 
 		} else if (check === 'OPTIONS') {
 

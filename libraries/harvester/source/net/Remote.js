@@ -1,9 +1,16 @@
 
-lychee.define('harvester.net.Remote').includes([
+lychee.define('harvester.net.Remote').requires([
+	'lychee.codec.BENCODE',
+	'lychee.codec.BITON',
+	'lychee.codec.JSON'
+]).includes([
 	'lychee.net.Tunnel'
 ]).exports(function(lychee, global, attachments) {
 
-	var _Tunnel = lychee.import('lychee.net.Tunnel');
+	var _BENCODE = lychee.import('lychee.codec.BENCODE');
+	var _BITON   = lychee.import('lychee.codec.BITON');
+	var _JSON    = lychee.import('lychee.codec.JSON');
+	var _Tunnel  = lychee.import('lychee.net.Tunnel');
 
 
 
@@ -56,9 +63,14 @@ lychee.define('harvester.net.Remote').includes([
 			headers['access-control-allow-origin'] = '*';
 			headers['content-control']             = 'no-transform';
 
-			var content_type = headers['content-type'] || null;
-			if (content_type === null) {
-				headers['content-type'] = 'application/json';
+
+			var codec = this.codec;
+			if (codec === _BENCODE) {
+				headers['content-type'] = 'application/bencode; charset=utf-8';
+			} else if (codec === _BITON) {
+				headers['content-type'] = 'application/biton; charset=binary';
+			} else if (codec === _JSON) {
+				headers['content-type'] = 'application/json; charset=utf-8';
 			}
 
 
