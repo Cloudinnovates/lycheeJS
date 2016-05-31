@@ -1,16 +1,20 @@
 
 lychee.define('harvester.net.Server').requires([
-	'harvester.net.Remote'
+	'harvester.net.Remote',
+	'harvester.net.server.File',
+	'harvester.net.server.Redirect'
 ]).includes([
 	'lychee.net.Server'
 ]).exports(function(lychee, global, attachments) {
 
-	var _CODEC  = {
+	var _CODEC    = {
 		encode: function(data) { return data; },
 		decode: function(data) { return data; }
 	};
-	var _Remote = lychee.import('harvester.net.Remote');
-	var _Server = lychee.import('lychee.net.Server');
+	var _File     = lychee.import('harvester.net.server.File');
+	var _Redirect = lychee.import('harvester.net.server.Redirect');
+	var _Remote   = lychee.import('harvester.net.Remote');
+	var _Server   = lychee.import('lychee.net.Server');
 
 
 
@@ -39,15 +43,12 @@ lychee.define('harvester.net.Server').requires([
 
 		this.bind('connect', function(remote) {
 
-			// remote.addService(new _Project(remote, this.host));
-
-
 			remote.bind('receive', function(payload, headers) {
 
 				var method = headers['method'];
 				if (method === 'OPTIONS') {
 
-					remote.send({}, {
+					this.send({}, {
 						'status':                       '200 OK',
 						'access-control-allow-headers': 'Content-Type',
 						'access-control-allow-origin':  'http://localhost',
@@ -56,8 +57,22 @@ lychee.define('harvester.net.Server').requires([
 					});
 
 				} else {
-// TODO: File Service
-console.log('RECEIVE', payload.toString(), headers);
+
+					var redirect = _Redirect.receive.call({ tunnel: this }, payload, headers);
+					if (redirect === false) {
+
+						var file = _File.receive.call({ tunnel: this }, payload, headers);
+						if (file === false) {
+
+							this.send('File not found.', {
+								'status':       '404 Not Found',
+								'content-type': 'text/plain; charset=utf-8'
+							});
+
+						}
+
+					}
+
 				}
 
 			});

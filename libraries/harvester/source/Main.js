@@ -43,7 +43,7 @@ lychee.define('harvester.Main').requires([
 					if (alias.internal === false) {
 
 						if (alias.family === 'IPv6' && alias.scopeid === 0) {
-							candidates.push('[' + alias.address + ']');
+							candidates.push(alias.address);
 						} else if (alias.family === 'IPv4') {
 							candidates.push(alias.address);
 						}
