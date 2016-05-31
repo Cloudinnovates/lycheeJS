@@ -7,6 +7,13 @@ lychee.define('lychee.net.Remote').requires([
 	'lychee.net.Tunnel'
 ]).exports(function(lychee, global, attachments) {
 
+	var _Debugger = lychee.import('lychee.net.remote.Debugger');
+	var _Stash    = lychee.import('lychee.net.remote.Stash');
+	var _Storage  = lychee.import('lychee.net.remote.Storage');
+	var _Tunnel   = lychee.import('lychee.net.Tunnel');
+
+
+
 	/*
 	 * IMPLEMENTATION
 	 */
@@ -16,7 +23,7 @@ lychee.define('lychee.net.Remote').requires([
 		var settings = lychee.extend({}, data);
 
 
-		lychee.net.Tunnel.call(this, settings);
+		_Tunnel.call(this, settings);
 
 		settings = null;
 
@@ -29,7 +36,7 @@ lychee.define('lychee.net.Remote').requires([
 		if (lychee.debug === true) {
 
 			this.bind('connect', function() {
-				this.addService(new lychee.net.remote.Debugger(this));
+				this.addService(new _Debugger(this));
 			}, this);
 
 		}
@@ -37,8 +44,8 @@ lychee.define('lychee.net.Remote').requires([
 
 		this.bind('connect', function() {
 
-			this.addService(new lychee.net.remote.Stash(this));
-			this.addService(new lychee.net.remote.Storage(this));
+			this.addService(new _Stash(this));
+			this.addService(new _Storage(this));
 
 		}, this);
 
@@ -55,7 +62,7 @@ lychee.define('lychee.net.Remote').requires([
 
 		serialize: function() {
 
-			var data = lychee.net.Tunnel.prototype.serialize.call(this);
+			var data = _Tunnel.prototype.serialize.call(this);
 			data['constructor'] = 'lychee.net.Remote';
 
 

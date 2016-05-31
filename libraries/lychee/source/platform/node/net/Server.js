@@ -48,10 +48,11 @@ lychee.define('lychee.net.Server').tags({
 		var settings = lychee.extend({}, data);
 
 
-		this.codec = _JSON;
-		this.host  = null;
-		this.port  = 1337;
-		this.type  = Class.TYPE.WS;
+		this.codec  = _JSON;
+		this.host   = null;
+		this.port   = 1337;
+		this.remote = _Remote;
+		this.type   = Class.TYPE.WS;
 
 
 		this.__isConnected = false;
@@ -61,6 +62,7 @@ lychee.define('lychee.net.Server').tags({
 		this.setCodec(settings.codec);
 		this.setHost(settings.host);
 		this.setPort(settings.port);
+		this.setRemote(settings.remote);
 		this.setType(settings.type);
 
 
@@ -125,10 +127,11 @@ lychee.define('lychee.net.Server').tags({
 			var settings = {};
 
 
-			if (this.codec !== _JSON)        settings.codec = lychee.serialize(this.codec);
-			if (this.host !== 'localhost')   settings.host  = this.host;
-			if (this.port !== 1337)          settings.port  = this.port;
-			if (this.type !== Class.TYPE.WS) settings.type  = this.type;
+			if (this.codec !== _JSON)        settings.codec  = lychee.serialize(this.codec);
+			if (this.host !== 'localhost')   settings.host   = this.host;
+			if (this.port !== 1337)          settings.port   = this.port;
+			if (this.remote !== _Remote)     settings.remote = lychee.serialize(this.remote);
+			if (this.type !== Class.TYPE.WS) settings.type   = this.type;
 
 
 			data['arguments'][0] = settings;
@@ -162,15 +165,13 @@ lychee.define('lychee.net.Server').tags({
 
 				server.on('connection', function(socket) {
 
-					var codec  = that.codec;
 					var host   = socket.remoteAddress || socket.server._connectionKey.split(':')[1];
 					var port   = socket.remotePort    || socket.server._connectionKey.split(':')[2];
-					var type   = that.type;
-					var remote = new _Remote({
-						codec: codec,
+					var remote = that.remote({
+						codec: that.codec,
 						host:  host,
 						port:  port,
-						type:  type
+						type:  that.type
 					});
 
 
@@ -286,6 +287,36 @@ lychee.define('lychee.net.Server').tags({
 			if (port !== null) {
 
 				this.port = port;
+
+				return true;
+
+			}
+
+
+			return false;
+
+		},
+
+		setRemote: function(remote) {
+
+			remote = lychee.interfaceof(remote, _Remote) === true ? remote : null;
+
+
+			if (remote !== null) {
+
+				var oldremote = this.remote;
+				if (oldremote !== remote) {
+
+					this.remote = remote;
+
+
+					if (this.__isConnected === true) {
+						this.disconnect();
+						this.connect();
+					}
+
+				}
+
 
 				return true;
 
