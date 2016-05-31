@@ -61,6 +61,7 @@ var _settings = (function() {
 
 	var settings = {
 		action:  null,
+		debug:   false,
 		profile: null,
 		sandbox: false
 	};
@@ -69,6 +70,8 @@ var _settings = (function() {
 	var raw_arg0 = process.argv[2] || '';
 	var raw_arg1 = process.argv[3] || '';
 	var raw_arg2 = process.argv[4] || '';
+	var raw_arg3 = process.argv[5] || '';
+	var raw_flag = raw_arg2 + ' ' + raw_arg3;
 
 
 	if (raw_arg0 === 'start') {
@@ -104,10 +107,13 @@ var _settings = (function() {
 	}
 
 
-	if (raw_arg2 === '--sandbox') {
-		settings.sandbox = true;
+	if (/--debug/g.test(raw_flag) === true) {
+		settings.debug = true;
 	}
 
+	if (/--sandbox/g.test(raw_flag) === true) {
+		settings.sandbox = true;
+	}
 
 	return settings;
 
@@ -169,7 +175,7 @@ var _bootup = function(settings) {
 
 	var environment = new lychee.Environment({
 		id:       'harvester',
-		debug:    false,
+		debug:    settings.debug === true,
 		sandbox:  true,
 		build:    'harvester.Main',
 		timeout:  3000,
@@ -257,6 +263,7 @@ var _bootup = function(settings) {
 
 	if (action === 'start' && has_profile) {
 
+		settings.profile.debug   = settings.debug === true;
 		settings.profile.sandbox = settings.sandbox === true;
 
 		_bootup(settings.profile);

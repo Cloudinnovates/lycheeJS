@@ -167,7 +167,7 @@ lychee.define('lychee.net.Server').tags({
 
 					var host   = socket.remoteAddress || socket.server._connectionKey.split(':')[1];
 					var port   = socket.remotePort    || socket.server._connectionKey.split(':')[2];
-					var remote = that.remote({
+					var remote = new that.remote({
 						codec: that.codec,
 						host:  host,
 						port:  port,

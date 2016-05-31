@@ -120,10 +120,7 @@ lychee.define('lychee.net.socket.WS').tags({
 			that.__connection = null;
 			that.__protocol   = null;
 
-
-			setTimeout(function() {
-				that.trigger('disconnect');
-			}, 0);
+			that.trigger('disconnect');
 
 		}
 

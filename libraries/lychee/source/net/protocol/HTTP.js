@@ -160,10 +160,6 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 					chunk.headers[key] = val;
 				}
 
-			} else if (/[0-9]{3}/g.test(tmp.substr(0, 3)) === true) {
-
-				chunk.headers['status'] = tmp.split(' ')[0];
-
 			} else if (/OPTIONS|GET|POST/g.test(tmp) === true) {
 
 				var tmp2   = tmp.split(' ');
@@ -199,6 +195,8 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 				}
 
+			} else if (/[0-9]{3}/g.test(tmp.substr(0, 3)) === true) {
+				chunk.headers['status'] = tmp.split(' ')[0];
 			}
 
 		});

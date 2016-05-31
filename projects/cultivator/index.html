@@ -199,7 +199,7 @@
 
 	if (host === 'localhost' && projects !== null) {
 
-		var config = new Config('http://localhost:4848/api/Project');
+		var config = new Config('http://localhost:4848/api/project/index');
 		var other  = [].slice.call(projects.querySelectorAll('fyto-ui-element-Project'));
 		var order  = other.length;
 
@@ -209,7 +209,7 @@
 			if (result === true && this.buffer instanceof Array) {
 
 				this.buffer.filter(function(project) {
-					return project.identifier.match(/projects\/cultivator/g) === null;
+					return /projects\/cultivator/g.test(project.identifier) === false;
 				}).forEach(function(project) {
 
 					var node = other.find(function(obj) {

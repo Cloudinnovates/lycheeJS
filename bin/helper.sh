@@ -109,23 +109,22 @@ _start_env () {
 
 }
 
-_put_API_Project () {
+_put_api_project () {
 
-	identifier="$1";
-	action="$2";
-	apiurl="http://localhost:4848/api/Project?identifier=$identifier&action=$action";
+	data="{\"identifier\":\"$1\",\"action\":\"$2\"}";
+	apiurl="http://localhost:4848/api/project/$2";
 
-	curl -i -X PUT $apiurl 2>&1;
+	curl -H "Content-Type: application/json" -X POST -d "$data" $apiurl 2>&1;
 
 }
 
-_put_API_Profile () {
+_put_api_profile () {
 
-	identifier="$1";
-	data=$(echo $2 | base64 --decode);
-	apiurl="http://localhost:4848/api/Profile?identifier=$identifier";
+	blob=$(echo $3 | base64 --decode);
+	data="{\"identifier\":\"$1\",\"data\":\"$blob\"}";
+	apiurl="http://localhost:4848/api/profile/$2";
 
-	curl -i -H "Content-Type: application/json" -X PUT -d "$data" $apiurl 2>&1;
+	curl -H "Content-Type: application/json" -X POST -d "$data" $apiurl 2>&1;
 
 }
 
@@ -185,7 +184,7 @@ if [ "$protocol" == "lycheejs" ]; then
 
 				cd $LYCHEEJS_ROOT;
 
-				_put_API_Profile "$resource" "$data";
+				_put_api_profile "$resource" "save" "$data";
 
 			;;
 
@@ -200,14 +199,14 @@ if [ "$protocol" == "lycheejs" ]; then
 
 			start)
 
-				_put_API_Project "$resource" "start";
+				_put_api_project "$resource" "start";
 				exit 0;
 
 			;;
 
 			stop)
 
-				_put_API_Project "$resource" "stop";
+				_put_api_project "$resource" "stop";
 				exit 0;
 
 			;;

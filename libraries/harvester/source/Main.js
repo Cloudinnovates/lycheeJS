@@ -1,20 +1,15 @@
 
 lychee.define('harvester.Main').requires([
 	'lychee.Input',
-	'lychee.codec.JSON',
-	'harvester.data.Host',
+	'harvester.net.Admin',
 	'harvester.net.Server',
 	'harvester.mod.Fertilizer',
 	'harvester.mod.Package',
-	'harvester.mod.Server',
-	'harvester.serve.API',
-	'harvester.serve.File',
-	'harvester.serve.Redirect'
+	'harvester.mod.Server'
 ]).includes([
 	'lychee.event.Emitter'
 ]).exports(function(lychee, global, attachments) {
 
-	var _JSON      = lychee.import('lychee.codec.JSON');
 	var _harvester = lychee.import('harvester');
 
 
@@ -69,141 +64,6 @@ lychee.define('harvester.Main').requires([
 
 	})();
 
-	var _process_admin = function(data, ready) {
-
-		var host = this.getHost('admin');
-		var url  = data.headers.url || null;
-
-		if (host !== null && url !== null) {
-
-			var parameters = {};
-
-			if (data.headers.method.match(/PUT|POST/)) {
-				parameters = _JSON.decode(data.payload) || {};
-			}
-
-
-			var tmp = data.headers.url.split('?')[1] || '';
-			if (tmp.length > 0) {
-
-				url = data.headers.url.split('?')[0];
-				tmp.split('&').forEach(function(value) {
-
-					var key = value.split('=')[0];
-					var val = value.split('=')[1];
-
-
-					if (!isNaN(parseInt(val, 10))) {
-						parameters[key] = parseInt(val, 10);
-					} else if (val === 'true') {
-						parameters[key] = true;
-					} else if (val === 'false') {
-						parameters[key] = false;
-					} else if (val === 'null') {
-						parameters[key] = null;
-					} else {
-						parameters[key] = val;
-					}
-
-				});
-
-			}
-
-
-			if (Object.keys(parameters).length > 0) {
-				data.headers.parameters = parameters;
-			}
-
-
-			if (_harvester.serve.API.can(host, url) === true) {
-
-				_harvester.serve.API.process(host, url, data, ready);
-				return true;
-
-			}
-
-		}
-
-
-		ready(null);
-
-		return false;
-
-	};
-
-	var _process_server = function(data, ready) {
-
-		if (data.headers.host === 'admin') {
-			ready(null);
-			return false;
-		}
-
-
-		var host = this.getHost(data.headers.host);
-		var url  = data.headers.url || null;
-
-		if (host !== null && url !== null) {
-
-			var parameters = {};
-
-			var tmp = data.headers.url.split('?')[1] || '';
-			if (tmp.length > 0) {
-
-				url = data.headers.url.split('?')[0];
-				tmp.split('&').forEach(function(value) {
-
-					var key = value.split('=')[0];
-					var val = value.split('=')[1];
-
-
-					if (!isNaN(parseInt(val, 10))) {
-						parameters[key] = parseInt(val, 10);
-					} else if (val === 'true') {
-						parameters[key] = true;
-					} else if (val === 'false') {
-						parameters[key] = false;
-					} else if (val === 'null') {
-						parameters[key] = null;
-					} else {
-						parameters[key] = val;
-					}
-
-				});
-
-			}
-
-
-			if (Object.keys(parameters).length > 0) {
-				data.headers.parameters = parameters;
-			}
-
-
-			if (_harvester.serve.API.can(host, url) === true) {
-
-				_harvester.serve.API.process(host, url, data, ready);
-				return true;
-
-			} else if (_harvester.serve.File.can(host, url) === true) {
-
-				_harvester.serve.File.process(host, url, data, ready);
-				return true;
-
-			} else if (_harvester.serve.Redirect.can(host, url) === true) {
-
-				_harvester.serve.Redirect.process(host, url, data, ready);
-				return true;
-
-			}
-
-		}
-
-
-		ready(null);
-
-		return false;
-
-	};
-
 
 
 	/*
@@ -212,14 +72,9 @@ lychee.define('harvester.Main').requires([
 
 	var _defaults = {
 
+		host:    null,
 		port:    null,
-		hosts:   null,
-		sandbox: false,
-
-		server: {
-			host: null,
-			port: 8080
-		}
+		sandbox: false
 
 	};
 
@@ -284,43 +139,20 @@ lychee.define('harvester.Main').requires([
 		this.defaults = lychee.extendunlink({}, this.settings);
 
 
-		this.hosts   = {};
-		this.modules = {};
-		this.server  = null;
+		this.admin  = null;
+		this.server = null;
 
 
-		if (settings.hosts instanceof Object) {
-
-			for (var id in settings.hosts) {
-
-				var project = settings.hosts[id];
-				if (project === null) {
-
-					this.setHost(id, null, null);
-
-				} else {
-
-					var cache = _PROJECTS[project] || null;
-					if (cache !== null) {
-						this.setHost(id, null, [ cache ]);
-					}
-
-				}
-
-			}
-
-		}
+		this._libraries = _LIBRARIES;
+		this._projects  = _PROJECTS;
 
 
-		if (typeof settings.port === 'number') {
-			this.settings.server.port = (settings.port | 0);
-		}
-
-
-		this.setHost('admin', null, null);
+		settings.host = typeof settings.host === 'string' ? settings.host       : null;
+		settings.port = typeof settings.port === 'number' ? (settings.port | 0) : 8080;
 
 
 		lychee.event.Emitter.call(this);
+
 
 
 		/*
@@ -329,55 +161,31 @@ lychee.define('harvester.Main').requires([
 
 		this.bind('load', function() {
 
-			var settings = this.settings.server || null;
-			if (settings !== null) {
+			this.admin  = new _harvester.net.Admin({
+				host: 'localhost',
+				port: 4848
+			});
 
-				this.admin  = new _harvester.net.Server({ port: 4848 });
-				this.server = new _harvester.net.Server(settings);
-
-				this.admin.bind('serve', function(data, ready) {
-					_process_admin.call(this, data, ready);
-				}, this);
-
-				this.server.bind('serve', function(data, ready) {
-					_process_server.call(this, data, ready);
-				}, this);
-
-			}
+			this.server = new _harvester.net.Server({
+				host: settings.host === 'localhost' ? null : settings.host,
+				port: settings.port
+			});
 
 		}, this, true);
 
 		this.bind('init', function() {
 
-			var settings = this.settings.server || null;
-			if (settings !== null) {
-
-				this.admin.connect();
-				this.server.connect();
+			this.admin.connect();
+			this.server.connect();
 
 
-				var port  = this.server.port;
-				var hosts = Object.keys(this.hosts).filter(function(host) {
-					return host !== 'admin';
-				}).map(function(host) {
-
-					if (host.indexOf(':') !== -1) {
-						return 'http://[' + host + ']:' + port;
-					} else {
-						return 'http://' + host + ':' + port;
-					}
-
-				});
-
-				console.log('\n\n');
-				console.log('Open your web browser and surf to one of the following hosts:');
-				console.log('\n');
-				hosts.forEach(function(host) {
-					console.log(host);
-				});
-				console.log('\n\n');
-
-			}
+			console.log('\n\n');
+			console.log('Open your web browser and surf to one of the following hosts:');
+			console.log('\n');
+			this.getHosts().forEach(function(host) {
+				console.log(host);
+			});
+			console.log('\n\n');
 
 		}, this, true);
 
@@ -474,54 +282,25 @@ lychee.define('harvester.Main').requires([
 
 
 
-		/*
-		 * INITIALIZATION: DEVELOPMENT MODE
-		 */
+		setInterval(function() {
 
-		if (settings.hosts['localhost'] === null) {
+			Object.values(_LIBRARIES).forEach(function(library) {
 
-			this.bind('init', function() {
-
-				if (this.server !== null) {
-
-					this.server.bind('serve', function(data, ready) {
-
-						var host = this.getHost(data.headers.host);
-						if (host === null) {
-							this.setHost(data.headers.host, null, null);
-						}
-
-					}, this);
-
+				if (_harvester.mod.Package.can(library) === true) {
+					_harvester.mod.Package.process(library);
 				}
 
-			}, this);
+			});
 
-			_PUBLIC_IPS.forEach(function(ip) {
-				this.setHost(ip, null, null);
-			}.bind(this));
+			Object.values(_PROJECTS).forEach(function(project) {
 
-			setInterval(function() {
+				if (_harvester.mod.Package.can(project) === true) {
+					_harvester.mod.Package.process(project);
+				}
 
-				Object.values(_LIBRARIES).forEach(function(library) {
+			});
 
-					if (_harvester.mod.Package.can(library) === true) {
-						_harvester.mod.Package.process(library);
-					}
-
-				});
-
-				Object.values(_PROJECTS).forEach(function(project) {
-
-					if (_harvester.mod.Package.can(project) === true) {
-						_harvester.mod.Package.process(project);
-					}
-
-				});
-
-			}.bind(this), 30000);
-
-		}
+		}.bind(this), 30000);
 
 	};
 
@@ -534,14 +313,13 @@ lychee.define('harvester.Main').requires([
 
 		deserialize: function(blob) {
 
-			var admin  = lychee.deserialize(blob.admin);
-			var server = lychee.deserialize(blob.server);
-
-
+			var admin = lychee.deserialize(blob.admin);
 			if (admin !== null) {
 				this.admin = admin;
 			}
 
+
+			var server = lychee.deserialize(blob.server);
 			if (server !== null) {
 				this.server = server;
 			}
@@ -599,6 +377,11 @@ lychee.define('harvester.Main').requires([
 			}
 
 
+			if (this.admin !== null) {
+				this.admin.disconnect();
+				this.admin = null;
+			}
+
 			if (this.server !== null) {
 				this.server.disconnect();
 				this.server = null;
@@ -615,50 +398,38 @@ lychee.define('harvester.Main').requires([
 		 * CUSTOM API
 		 */
 
-		getHost: function(identifier) {
+		getHosts: function() {
 
-			var id = (identifier || '');
-			if (id.match(/\[.*\]+/g)) {
-				id = id.match(/([0-9a-f\:]+)/g)[0];
-			} else if (id.indexOf(':')) {
-				id = id.split(':')[0];
-			}
+			var hosts  = [];
+			var server = this.server;
 
+			if (server !== null) {
 
-			return this.hosts[id] || null;
+				var host = server.host || null;
+				var port = server.port;
 
-		},
-
-		setHost: function(identifier, libraries, projects) {
-
-			identifier = typeof identifier === 'string' ? identifier : null;
-			libraries  = libraries instanceof Array     ? libraries  : Object.values(_LIBRARIES);
-			projects   = projects instanceof Array      ? projects   : Object.values(_PROJECTS);
-
-
-			if (identifier !== null) {
-
-				var id = (identifier || '');
-				if (id.match(/\[.*\]+/g)) {
-					id = id.match(/([0-9a-f\:]+)/g)[0];
-				} else if (id.indexOf(':')) {
-					id = id.split(':')[0];
+				if (host === null) {
+					hosts.push.apply(hosts, _PUBLIC_IPS);
+					hosts.push('localhost');
+				} else {
+					hosts.push(host);
 				}
 
 
-				this.hosts[id] = new _harvester.data.Host({
-					cultivator: projects.length > 1,
-					libraries:  libraries,
-					projects:   projects
+				hosts = hosts.map(function(host) {
+
+					if (host.indexOf(':') !== -1) {
+						return 'http://[' + host + ']:' + port;
+					} else {
+						return 'http://' + host + ':' + port;
+					}
+
 				});
-
-
-				return true;
 
 			}
 
 
-			return false;
+			return hosts;
 
 		}
 

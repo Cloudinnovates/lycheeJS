@@ -1,12 +1,9 @@
 
-lychee.define('harvester.net.Remote').requires([
-	'harvester.net.protocol.HTTP'
-]).includes([
-	'harvester.net.Tunnel'
+lychee.define('harvester.net.Remote').includes([
+	'lychee.net.Tunnel'
 ]).exports(function(lychee, global, attachments) {
 
-	var _Protocol = lychee.import('harvester.net.protocol.HTTP');
-	var _Tunnel   = lychee.import('harvester.net.Tunnel');
+	var _Tunnel = lychee.import('lychee.net.Tunnel');
 
 
 
@@ -19,44 +16,9 @@ lychee.define('harvester.net.Remote').requires([
 		var settings = lychee.extend({}, data);
 
 
-		this.__socket      = null;
-		this.__isConnected = false;
-
-
-		settings.codec = {
-			encode: function(data) { return data; },
-			decode: function(data) { return data; }
-		};
-
-
 		_Tunnel.call(this, settings);
 
 		settings = null;
-
-
-
-		/*
-		 * INITIALIZATION
-		 */
-
-		this.unbind('connect');
-		this.bind('connect', function() {
-			this.__isConnected = true;
-		}, this);
-
-		this.unbind('disconnect');
-		this.bind('disconnect', function() {
-			this.__isConnected = false;
-		}, this);
-
-		this.unbind('send');
-		this.bind('send', function(blob) {
-
-			if (this.__socket !== null) {
-				this.__socket.send(blob.headers, blob.payload);
-			}
-
-		}, this);
 
 	};
 
@@ -85,59 +47,23 @@ lychee.define('harvester.net.Remote').requires([
 		 * CUSTOM API
 		 */
 
-		connect: function(socket) {
+		send: function(data, headers) {
 
-			if (this.__isConnected === false) {
-
-				var that = this;
-
-
-				this.__socket = new _Protocol(socket, _Protocol.TYPE.remote);
-
-				this.__socket.ondata = function(headers, payload) {
-
-					that.receive({
-						headers: headers,
-						payload: payload
-					});
-
-				};
-
-				this.__socket.onclose = function(code) {
-					that.__socket = null;
-					that.trigger('disconnect', [ code ]);
-				};
+			data    = data instanceof Object    ? data    : null;
+			headers = headers instanceof Object ? headers : {};
 
 
-				if (lychee.debug === true) {
-					console.log('harvester.net.Remote: Connected to ' + this.host + ':' + this.port);
-				}
+			headers['access-control-allow-origin'] = '*';
+			headers['content-control']             = 'no-transform';
 
-
-				return true;
-
+			var content_type = headers['content-type'] || null;
+			if (content_type === null) {
+				headers['content-type'] = 'application/json';
 			}
 
 
-			return false;
-
-		},
-
-		disconnect: function() {
-
-			if (this.__isConnected === true) {
-
-				if (lychee.debug === true) {
-					console.log('harvester.net.Remote: Disconnected from ' + this.host + ':' + this.port);
-				}
-
-				if (this.__socket !== null) {
-					this.__socket.close();
-				}
-
-
-				return true;
-
+			if (/@plug|@unplug/g.test(headers.method) === false) {
+				return _Tunnel.prototype.send.call(this, data, headers);
 			}
 
 

@@ -395,10 +395,19 @@ lychee.define('lychee.codec.JSON').exports(function(lychee, global, attachments)
 
 				while (errors === 0) {
 
-					var object_key = _decode(stream);
-					check = stream.read(1);
+					if (stream.seek(1) === '}') {
+						break;
+					}
 
-					if (check !== ':') {
+
+					var object_key = _decode(stream);
+					check = stream.seek(1);
+
+					if (check === '}') {
+						break;
+					} else if (check === ':') {
+						stream.read(1);
+					} else if (check !== ':') {
 						errors++;
 					}
 
@@ -409,10 +418,10 @@ lychee.define('lychee.codec.JSON').exports(function(lychee, global, attachments)
 					value[object_key] = object_value;
 
 
-					if (check === ',') {
-						stream.read(1);
-					} else if (check === '}') {
+					if (check === '}') {
 						break;
+					} else if (check === ',') {
+						stream.read(1);
 					} else {
 						errors++;
 					}

@@ -66,13 +66,18 @@ case "$1" in
 			SANDBOX_FLAG="--sandbox";
 		fi;
 
+		DEBUG_FLAG="";
+		if [ "$4" == "--debug" ]; then
+			DEBUG_FLAG="--debug";
+		fi;
+
 
 		cd $LYCHEEJS_ROOT;
 
 		if [ "$HARVESTER_USER" == "root" ] || [ "$HARVESTER_USER" == "lycheejs-harvester" ]; then
-			$LYCHEEJS_NODE ./bin/harvester.js start "$2" "$SANDBOX_FLAG" >> $HARVESTER_LOG 2>> $HARVESTER_ERR
+			$LYCHEEJS_NODE ./bin/harvester.js start "$2" "$SANDBOX_FLAG" "$DEBUG_FLAG" >> $HARVESTER_LOG 2>> $HARVESTER_ERR
 		else
-			$LYCHEEJS_NODE ./bin/harvester.js start "$2" "$SANDBOX_FLAG"
+			$LYCHEEJS_NODE ./bin/harvester.js start "$2" "$SANDBOX_FLAG" "$DEBUG_FLAG"
 		fi;
 
 	;;

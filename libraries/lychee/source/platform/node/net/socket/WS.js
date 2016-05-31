@@ -89,10 +89,7 @@ lychee.define('lychee.net.socket.WS').tags({
 			that.__connection = socket;
 			that.__protocol   = protocol;
 
-
-			setTimeout(function() {
-				that.trigger('connect');
-			}, 0);
+			that.trigger('connect');
 
 		}
 
@@ -116,10 +113,7 @@ lychee.define('lychee.net.socket.WS').tags({
 			that.__connection = null;
 			that.__protocol   = null;
 
-
-			setTimeout(function() {
-				that.trigger('disconnect');
-			}, 0);
+			that.trigger('disconnect');
 
 		}
 

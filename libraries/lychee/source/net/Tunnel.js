@@ -394,6 +394,10 @@ lychee.define('lychee.net.Tunnel').requires([
 			var method = headers['@service-method'] || null;
 
 			var data = null;
+			if (payload.length === 0) {
+				payload = this.codec.encode({});
+			}
+
 			if (payload !== null) {
 				data = this.codec.decode(payload);
 			}

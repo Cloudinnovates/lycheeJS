@@ -106,9 +106,6 @@
 				"Filesystem": [
 					"js"
 				],
-				"Host": [
-					"js"
-				],
 				"Package": [
 					"js"
 				],
@@ -131,20 +128,18 @@
 				]
 			},
 			"net": {
+				"Admin": [
+					"js"
+				],
 				"Remote": [
 					"js"
 				],
 				"Server": [
 					"js"
 				],
-				"Tunnel": [
+				"Server__OLD": [
 					"js"
 				],
-				"protocol": {
-					"HTTP": [
-						"js"
-					]
-				},
 				"remote": {
 					"Project": [
 						"js"
@@ -166,9 +161,6 @@
 						"js"
 					],
 					"Profile": [
-						"js"
-					],
-					"Project": [
 						"js"
 					],
 					"Server": [

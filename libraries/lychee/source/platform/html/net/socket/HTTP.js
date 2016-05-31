@@ -38,10 +38,7 @@ lychee.define('lychee.net.socket.HTTP').tags({
 			that.__connection = socket;
 			that.__protocol   = protocol;
 
-
-			setTimeout(function() {
-				that.trigger('connect');
-			}, 0);
+			that.trigger('connect');
 
 		}
 
