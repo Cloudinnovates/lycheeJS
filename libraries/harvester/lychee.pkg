@@ -147,15 +147,17 @@
 					"Server": [
 						"js"
 					]
+				},
+				"server": {
+					"File": [
+						"js"
+					],
+					"Redirect": [
+						"js"
+					]
 				}
 			},
 			"serve": {
-				"File": [
-					"js"
-				],
-				"Redirect": [
-					"js"
-				],
 				"api": {
 					"Profile": [
 						"js"

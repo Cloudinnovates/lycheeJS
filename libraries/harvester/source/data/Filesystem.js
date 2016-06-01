@@ -315,7 +315,7 @@ lychee.define('harvester.data.Filesystem').tags({
 					return {
 						type:   stat.isFile() ? 'file' : 'directory',
 						length: stat.size,
-						time:   stat.mtime
+						mtime:  new Date(stat.mtime.toUTCString())
 					};
 
 				}

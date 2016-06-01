@@ -162,12 +162,12 @@ lychee.define('harvester.net.server.File').requires([
 				var timestamp = headers['if-modified-since'] || null;
 				if (timestamp !== null) {
 
-					var diff = new Date(info.time) > new Date(timestamp);
+					var diff = info.mtime > new Date(timestamp);
 					if (diff === false) {
 
 						tunnel.send('', {
-							'status': '304 Not Modified',
-							'last-modified': new Date(info.time).toUTCString()
+							'status':        '304 Not Modified',
+							'last-modified': info.mtime.toUTCString()
 						});
 
 						return true;

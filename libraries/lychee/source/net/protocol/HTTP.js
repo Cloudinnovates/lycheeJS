@@ -67,6 +67,8 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 			for (var key in headers) {
 				if (key.charAt(0) === '@') continue;
+				if (key === 'url') continue;
+				if (key === 'method') continue;
 				headers_data += '' + _uppercase(key) + ': ' + headers[key] + '\r\n';
 			}
 
@@ -84,6 +86,7 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 
 			for (var key in headers) {
 				if (key.charAt(0) === '@') continue;
+				if (key === 'status') continue;
 				headers_data += '' + _uppercase(key) + ': ' + headers[key] + '\r\n';
 			}
 
@@ -154,10 +157,19 @@ lychee.define('lychee.net.protocol.HTTP').exports(function(lychee, global, attac
 				var key = (tmp.split(':')[0] || '').trim().toLowerCase();
 				var val = (tmp.split(':')[1] || '').trim();
 
-				if (/host|origin|connection|upgrade|content-type|accept-encoding|e-tag|expires|last-modified/g.test(key) === true) {
+				if (/host|origin|connection|upgrade|content-type|content-length|accept-encoding|accept-language|e-tag/g.test(key) === true) {
+
 					chunk.headers[key] = val;
+
+				} else if (/expires|if-modified-since|last-modified/g.test(key) === true) {
+
+					val = tmp.split(':').slice(1).join(':').trim();
+					chunk.headers[key] = val;
+
 				} else if (/access-control/g.test(key) === true) {
+
 					chunk.headers[key] = val;
+
 				}
 
 			} else if (/OPTIONS|GET|POST/g.test(tmp) === true) {
