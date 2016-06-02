@@ -1,14 +1,12 @@
 
 # Release Guide for lychee.js
 
-1. [Update lychee.js Engine](#update-lychee)
-  - [Fix Info.plist files](#fix-infoplist-files)
-2. [Release Runtimes](#release-runtimes)
+1. [Update lychee.js](#update-lycheejs)
+  - [Fix Info.plist files](#todo-for-automation-fix-infoplist-files)
 3. [Release lychee.js](#release-lycheejs)
-4. [Release lychee.js Bundles](#release-lycheejs-bundles)
 
 
-## Update lychee.js Engine
+## Update lychee.js
 
 First, the `development` branch is the branch that is
 the newest HEAD and gets merged back to `master` with
@@ -18,6 +16,9 @@ To make sure everything is up-to-date, execute the update tool:
 
 ```bash
 cd /opt/lycheejs;
+
+# You should have been on development already
+git checkout development;
 
 ./bin/maintenance/do-update.sh;
 ```
@@ -42,7 +43,7 @@ are listed below:
 ```
 
 
-## Release lychee.js Engine
+## Release lychee.js
 
 ```bash
 cd /opt/lycheejs;
