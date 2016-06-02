@@ -25,8 +25,8 @@ USER_LOG=`logname`;
 
 
 LYCHEEJS_ROOT=$(cd "$(dirname "$0")/../../"; pwd);
-LYCHEEJS_TEMP="/tmp/lycheejs";
-LYCHEEJS_BRANCH=$(cd $LYCHEEJS_ROOT && git symbolic-ref HEAD 2>/dev/null);
+LYCHEEJS_FOLDER="/tmp/lycheejs";
+LYCHEEJS_BRANCH=$(cd $LYCHEEJS_ROOT && git symbolic-ref HEAD 2>/dev/null | cut -d"/" -f 3);
 OLD_VERSION=$(cd $LYCHEEJS_ROOT && cat ./libraries/lychee/source/core/lychee.js | grep VERSION | cut -d\" -f2);
 NEW_VERSION=$(_get_version);
 
@@ -59,16 +59,18 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 	echo "";
 	echo "lychee.js Release Tool";
 	echo "";
-	echo "This tool will automatically create a lychee.js release";
+	echo "All your data are belong to us.";
+	echo "This tool creates a new lychee.js release.";
 	echo "";
-	echo "lychee.js Location: $LYCHEEJS_TEMP";
+	echo "You need to be a member of the Artificial-Engineering Orga";
+	echo "and you will be questioned again when the release was built.";
+	echo "";
+	echo "lychee.js Folder: $LYCHEEJS_FOLDER";
 	echo "lychee.js Branch: $LYCHEEJS_BRANCH";
 	echo "";
 	echo "Old lychee.js version: $OLD_VERSION";
 	echo "New lychee.js version: $NEW_VERSION";
 	echo "";
-
-
 
 	read -p "Continue (y/n)? " -r
 
@@ -80,18 +82,18 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 
 
 
-	if [ -d $LYCHEEJS_TEMP ]; then
-		rm -rf $LYCHEEJS_TEMP;
+	if [ -d $LYCHEEJS_FOLDER ]; then
+		rm -rf $LYCHEEJS_FOLDER;
 	fi;
 
-	mkdir $LYCHEEJS_TEMP;
-	git clone git@github.com:Artificial-Engineering/lycheeJS.git $LYCHEEJS_TEMP;
+	mkdir $LYCHEEJS_FOLDER;
+	git clone git@github.com:Artificial-Engineering/lycheeJS.git $LYCHEEJS_FOLDER;
 
-	mkdir $LYCHEEJS_TEMP/bin/runtime;
-	git clone --single-branch --branch master --depth 1 git@github.com:Artificial-Engineering/lycheeJS-runtime.git $LYCHEEJS_TEMP/bin/runtime;
+	mkdir $LYCHEEJS_FOLDER/bin/runtime;
+	git clone --single-branch --branch master --depth 1 git@github.com:Artificial-Engineering/lycheeJS-runtime.git $LYCHEEJS_FOLDER/bin/runtime;
 
 
-	cd $LYCHEEJS_TEMP;
+	cd $LYCHEEJS_FOLDER;
 	git checkout development;
 
 	sed -i 's|2[0-9][0-9][0-9]-Q[1-4]|'$NEW_VERSION'|g' ./README.md;
@@ -100,28 +102,73 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 	git add ./README.md;
 	git add ./libraries/lychee/source/core/lychee.js;
 	git commit -m "lychee.js $NEW_VERSION release";
-	git push origin development;
 
+
+	cd $LYCHEEJS_FOLDER;
+	$LYCHEEJS_FOLDER/bin/configure.sh --sandbox;
+
+
+
+	#
+	# BUILD lycheejs-library
+	#
+
+	cd $LYCHEEJS_FOLDER;
+	git clone --single-branch --branch master git@github.com:Artificial-Engineering/lycheeJS-library.git $LYCHEEJS_FOLDER/projects/lycheejs-library;
+
+	cd $LYCHEEJS_FOLDER/projects/lycheejs-library;
+	./bin/build.sh;
+
+
+
+	#
+	# BUILD AND PACKAGE lycheejs-website
+	#
+
+	cd $LYCHEEJS_FOLDER;
+	git clone --single-branch --branch master git@github.com:Artificial-Engineering/lycheeJS-website.git $LYCHEEJS_FOLDER/projects/lycheejs-website;
+	$LYCHEEJS_FOLDER/bin/fertilizer.sh html/main /projects/lycheejs-website;
+
+
+
+	echo "";
+	echo "Somebody set us up the bomb.";
+	echo "";
+	echo "If no error occured, you can push the lychee.js release to GitHub now.";
+	echo "";
+	echo "WARNING: This is irreversible.";
+	echo "WARNING: It is wise to manually check /tmp/lycheejs now.";
+	echo "";
+
+	read -p "Continue (y/n)? " -r
+
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		echo "";
+	else
+		exit 1;
+	fi;
+
+
+
+	#
+	# PACKAGE lycheejs
+	#
+
+	cd $LYCHEEJS_FOLDER;
+	git push origin development;
 	git checkout master;
 	git merge --squash development;
 	git commit -m "lychee.js $NEW_VERSION release";
 	git push origin master;
 
 
-	cd $LYCHEEJS_TEMP;
-	$LYCHEEJS_TEMP/bin/configure.sh --sandbox;
 
+	#
+	# PACKAGE lycheejs-library
+	#
 
-	cd $LYCHEEJS_TEMP;
-	git clone --single-branch --branch master git@github.com:Artificial-Engineering/lycheeJS-library.git $LYCHEEJS_TEMP/projects/lycheejs-library;
-
-#   XXX: Might not make sense to use Fertilizer due to env:node overhead
-#	$LYCHEEJS_TEMP/bin/fertilizer.sh auto /projects/lycheejs-website;
-
-	cd $LYCHEEJS_TEMP/projects/lycheejs-library;
-	./bin/build.sh;
+	cd $LYCHEEJS_FOLDER/projects/lycheejs-library;
 	./bin/package.sh;
-
 
 else
 
