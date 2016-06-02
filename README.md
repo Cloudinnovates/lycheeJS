@@ -11,12 +11,12 @@ Support our libre Bot Cloud via BTC [1CamMuvrFU1QAMebPoDsL3JrioVDoxezY2](bitcoin
 
 The following repositories are related to the lychee.js project:
 
-- [lycheeJS-bundle](https://github.com/Artificial-Engineering/lycheeJS-bundle.git) generates the OS-ready bundles.
-- [lycheeJS-future](https://github.com/Artificial-Engineering/lycheeJS-future.git) contains concepts and ideas not yet finished.
-- [lycheeJS-library](https://github.com/Artificial-Engineering/lycheeJS-library.git) contains the lychee.js Library (for `bower` and `npm`).
-- [lycheeJS-runtime](https://github.com/Artificial-Engineering/lycheeJS-runtime.git) contains all pre-compiled runtimes (fertilizers).
-- [lycheeJS-tutorial](https://github.com/Artificial-Engineering/lycheeJS-tutorial.git) contains the lychee.js tutorial.
-- [lycheeJS-website](https://github.com/Artificial-Engineering/lycheeJS-website.git) contains the lychee.js website.
+- [lychee.js Bundle](https://github.com/Artificial-Engineering/lycheeJS-bundle.git) generates the OS-ready bundles.
+- [lychee.js Future](https://github.com/Artificial-Engineering/lycheeJS-future.git) contains concepts and ideas not yet finished.
+- [lychee.js Library](https://github.com/Artificial-Engineering/lycheeJS-library.git) contains the lychee.js Library (for `bower` and `npm`).
+- [lychee.js Runtime](https://github.com/Artificial-Engineering/lycheeJS-runtime.git) contains all pre-compiled runtimes (fertilizers).
+- [lychee.js Tutorial](https://github.com/Artificial-Engineering/lycheeJS-tutorial.git) contains the lychee.js tutorial.
+- [lychee.js Website](https://github.com/Artificial-Engineering/lycheeJS-website.git) contains the lychee.js website.
 
 
 lychee.js is a [Next-Gen Isomorphic Application Engine](https://lychee.js.org/#!vision)
@@ -39,39 +39,32 @@ using a serialized `lychee.Environment` that is setup in
 each project's or library's `lychee.pkg` file.
 
 
-| Target       | Fertilizer                   | Package  | arm | amd64 |
-|:-------------|:-----------------------------|:---------|:---:|:-----:|
-| Browser      | html                         |          |  ✓  |   ✓   |
-| Linux        | html-nwjs, node, node-sdl    | bin      |  ✓  |   ✓   |
-| OSX          | html-nwjs, node              | app, bin |     |   ✓   |
-| Windows      | html-nwjs, node              |          |     |   ✓   |
-| Android      | html-webview, node, node-sdl | apk, bin |  ✓  |   ✓   |
-| BlackberryOS | html-webview, node, node-sdl | apk, bin |  ✓  |   ✓   |
-| FirefoxOS    | html-webview                 | zip      |  ✓  |   ✓   |
-| iOS          | html                         |          |     |       |
-| Ubuntu Touch | html-webview, node, node-sdl | deb, bin |  ✓  |   ✓   |
+| Target       | Fertilizer                   | Package  | arm |  x86  | amd64 |
+|:-------------|:-----------------------------|:---------|:---:|:-----:|:-----:|
+| Browser      | html                         |          |  ✓  |   ✓   |   ✓   |
+| Linux        | html-nwjs, node, node-sdl    | bin      |  ✓  |   ✓   |   ✓   |
+| OSX          | html-nwjs, node              | app, bin |     |       |   ✓   |
+| Windows      | html-nwjs, node              |          |     |   ✓   |   ✓   |
+| Android      | html-webview, node, node-sdl | apk, bin |  ✓  |   ✓   |   ✓   |
+| BlackberryOS | html-webview, node, node-sdl | apk, bin |  ✓  |   ✓   |   ✓   |
+| FirefoxOS    | html-webview                 | zip      |  ✓  |   ✓   |   ✓   |
+| iOS          | html                         |          |     |       |       |
+| Ubuntu Touch | html-webview, node, node-sdl | deb, bin |  ✓  |   ✓   |   ✓   |
 
 The iOS Fertilizer has currently no support for cross-compilation
 due to XCode limitations. You can still create an own WebView iOS
 app and use the `html` platform adapter.
-
-lychee.js does not ship x86 (32 bit) runtimes in order to save hard disk
-space. If you still have an old x86 computer you have to modify at least
-[node/update.sh](https://github.com/Artificial-Engineering/lycheeJS-runtime/blob/master/node/update.sh)
-script in the `./bin/runtime` folder and execute it once before
-starting the `lycheejs-harvester`.
-
 
 
 # Install lychee.js
 
 The lychee.js Bundles (such as Debian package, OSX package or lycheeOS
 image) are being deprecated, but can be built by anyone using the
-[lycheeJS-bundle](https://github.com/Artificial-Engineering/lycheeJS-bundle)
+[lychee.js Bundle](https://github.com/Artificial-Engineering/lycheeJS-bundle)
 repository.
 
 The lychee.js Library (available via `bower` and `npm`) is available
-in the [lycheeJS-library](https://github.com/Artificial-Engineering/lycheeJS-library)
+in the [lychee.js Library](https://github.com/Artificial-Engineering/lycheeJS-library)
 repository.
 
 
