@@ -78,7 +78,7 @@ elif [ "$LYCHEEJS_CHANGE" == "" ]; then
 else
 
 	echo "Cannot update lychee.js if you have local changes.";
-	echo "Please commit changes to prevent merge conflicts."
+	echo "Please commit changes to prevent merge conflicts.";
 	exit 0;
 
 fi;
