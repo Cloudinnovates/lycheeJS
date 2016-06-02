@@ -45,6 +45,14 @@ are listed below:
 
 ## Release lychee.js
 
+The lychee.js Release Tool is a wizard that automatically updates
+and creates the quaterly releases for everything including:
+
+- lycheejs (Engine repository)
+- lycheejs-runtime (update and publish on github)
+- lycheejs-library (publish on NPM and Bower)
+- lycheejs-website (rebuild with new lycheejs library)
+
 ```bash
 cd /opt/lycheejs;
 
