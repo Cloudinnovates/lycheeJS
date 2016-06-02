@@ -29,14 +29,19 @@ The project aims to ease up and automate the design and
 development process of applications through intelligent
 software bots that learn from your application code.
 
-The development process is optimized for Blink-based
-browsers (Chromium, Google Chrome, Opera) and their
-developer tools.
-
 The target platforms are described as so-called Fertilizers.
 Those Fertilizers cross-compile everything automagically
 using a serialized `lychee.Environment` that is setup in
 each project's or library's `lychee.pkg` file.
+
+
+The development process is optimized for Blink-based
+browsers (Chromium, Google Chrome, Opera) and their
+developer tools.
+
+We honestly recommend NOT using Firefox due to lack of
+developer tools, lack of debugging tools and lack of
+network performance.
 
 
 | Target       | Fertilizer                   | Package   | armv7 |  x86  | x86\_64 |
