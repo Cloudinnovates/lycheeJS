@@ -35,7 +35,7 @@ NPM_BIN=`which npm`;
 
 
 if [ "$NPM_BIN" == "" ]; then
-	echo "Install NPM first.";
+	echo "Please install NPM first.";
 	exit 1;
 fi;
 
@@ -62,8 +62,9 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 	echo "All your data are belong to us.";
 	echo "This tool creates a new lychee.js release.";
 	echo "";
-	echo "You need to be a member of the Artificial-Engineering Orga";
-	echo "and you will be questioned again when the release was built.";
+	echo "You need to be member of the Artificial-Engineering";
+	echo "organization and you will be questioned again when";
+	echo "the release is ready for publishing.";
 	echo "";
 	echo "lychee.js Folder: $LYCHEEJS_FOLDER";
 	echo "lychee.js Branch: $LYCHEEJS_BRANCH";
@@ -81,6 +82,10 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 	fi;
 
 
+
+	#
+	# INIT lycheejs
+	#
 
 	if [ -d $LYCHEEJS_FOLDER ]; then
 		rm -rf $LYCHEEJS_FOLDER;
@@ -106,6 +111,21 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 
 	cd $LYCHEEJS_FOLDER;
 	$LYCHEEJS_FOLDER/bin/configure.sh --sandbox;
+
+
+
+	#
+	# BUILD AND UPDATE lycheejs-runtime
+	#
+
+	cd $LYCHEEJS_FOLDER/bin/runtime;
+	./bin/update.sh;
+
+	rm -rf .git/;
+	git init;
+	git remote add origin git@github.com:Artificial-Engineering/lycheeJS-runtime.git;
+	git add ./;
+	git commit -m "lychee.js $NEW_VERSION release";
 
 
 
@@ -160,6 +180,15 @@ elif [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
 	git merge --squash development;
 	git commit -m "lychee.js $NEW_VERSION release";
 	git push origin master;
+
+
+
+	#
+	# PACKAGE lycheejs-runtime
+	#
+
+	cd $LYCHEEJS_FOLDER/bin/runtime;
+	git push origin master -f;
 
 
 
