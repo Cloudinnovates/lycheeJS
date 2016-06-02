@@ -361,6 +361,14 @@ elif [ "$protocol" == "env" ]; then
 				_start_env $LYCHEEJS_ROOT/bin/runtime/node/osx/$ARCH/node $program $arg1 $arg2 $arg3;
 			fi;
 
+		elif [ "$platform" == "node-sdl" ]; then
+
+			if [ "$OS" == "linux" ]; then
+				_start_env $LYCHEEJS_ROOT/bin/runtime/node-sdl/linux/$ARCH/node $program $arg1 $arg2 $arg3;
+			elif [ "$OS" == "osx" ]; then
+				_start_env $LYCHEEJS_ROOT/bin/runtime/node-sdl/osx/$ARCH/node $program $arg1 $arg2 $arg3;
+			fi;
+
 		fi;
 
 	fi;

@@ -39,17 +39,17 @@ using a serialized `lychee.Environment` that is setup in
 each project's or library's `lychee.pkg` file.
 
 
-| Target       | Fertilizer                   | Package  | arm |  x86  | amd64 |
-|:-------------|:-----------------------------|:---------|:---:|:-----:|:-----:|
-| Browser      | html                         |          |  ✓  |   ✓   |   ✓   |
-| Linux        | html-nwjs, node, node-sdl    | bin      |  ✓  |   ✓   |   ✓   |
-| OSX          | html-nwjs, node              | app, bin |     |       |   ✓   |
-| Windows      | html-nwjs, node              |          |     |   ✓   |   ✓   |
-| Android      | html-webview, node, node-sdl | apk, bin |  ✓  |   ✓   |   ✓   |
-| BlackberryOS | html-webview, node, node-sdl | apk, bin |  ✓  |   ✓   |   ✓   |
-| FirefoxOS    | html-webview                 | zip      |  ✓  |   ✓   |   ✓   |
-| iOS          | html                         |          |     |       |       |
-| Ubuntu Touch | html-webview, node, node-sdl | deb, bin |  ✓  |   ✓   |   ✓   |
+| Target       | Fertilizer                   | Package   | armv7 |  x86  | x86\_64 |
+|:-------------|:-----------------------------|:----------|:-----:|:-----:|:-------:|
+| Browser      | html                         | zip, html |   ✓   |   ✓   |    ✓    |
+| Linux        | html-nwjs, node, node-sdl    | bin       |   ✓   |   ✓   |    ✓    |
+| OSX          | html-nwjs, node, node-sdl    | app, bin  |       |       |    ✓    |
+| Windows      | html-nwjs, node, node-sdl    | exe       |       |   ✓   |    ✓    |
+| Android      | html-webview, node, node-sdl | apk, bin  |   ✓   |   ✓   |    ✓    |
+| BlackberryOS | html-webview, node, node-sdl | apk, bin  |   ✓   |   ✓   |    ✓    |
+| FirefoxOS    | html-webview                 | zip       |   ✓   |   ✓   |    ✓    |
+| iOS          | html                         |           |       |       |         |
+| Ubuntu Touch | html-webview, node           | deb, bin  |   ✓   |   ✓   |    ✓    |
 
 The iOS Fertilizer has currently no support for cross-compilation
 due to XCode limitations. You can still create an own WebView iOS
