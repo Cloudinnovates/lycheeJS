@@ -43,12 +43,12 @@ each project's or library's `lychee.pkg` file.
 |:-------------|:-----------------------------|:----------|:-----:|:-----:|:-------:|
 | Browser      | html                         | zip, html |   ✓   |   ✓   |    ✓    |
 | Linux        | html-nwjs, node, node-sdl    | bin       |   ✓   |   ✓   |    ✓    |
-| OSX          | html-nwjs, node, node-sdl    | app, bin  |       |       |    ✓    |
-| Windows      | html-nwjs, node, node-sdl    | exe       |       |   ✓   |    ✓    |
+| OSX          | html-nwjs, node, node-sdl    | app, bin  |   ✗   |   ✗   |    ✓    |
+| Windows      | html-nwjs, node, node-sdl    | exe       |   ✗   |   ✓   |    ✓    |
 | Android      | html-webview, node, node-sdl | apk, bin  |   ✓   |   ✓   |    ✓    |
 | BlackberryOS | html-webview, node, node-sdl | apk, bin  |   ✓   |   ✓   |    ✓    |
 | FirefoxOS    | html-webview                 | zip       |   ✓   |   ✓   |    ✓    |
-| iOS          | html                         |           |       |       |         |
+| iOS          | html                         |           |   ✗   |   ✗   |    ✗    |
 | Ubuntu Touch | html-webview, node           | deb, bin  |   ✓   |   ✓   |    ✓    |
 
 The iOS Fertilizer has currently no support for cross-compilation
