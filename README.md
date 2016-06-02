@@ -15,7 +15,6 @@ The following repositories are related to the lychee.js project:
 - [lychee.js Future](https://github.com/Artificial-Engineering/lycheeJS-future.git) contains concepts and ideas not yet finished.
 - [lychee.js Library](https://github.com/Artificial-Engineering/lycheeJS-library.git) contains the lychee.js Library (for `bower` and `npm`).
 - [lychee.js Runtime](https://github.com/Artificial-Engineering/lycheeJS-runtime.git) contains all pre-compiled runtimes (fertilizers).
-- [lychee.js Tutorial](https://github.com/Artificial-Engineering/lycheeJS-tutorial.git) contains the lychee.js tutorial.
 - [lychee.js Website](https://github.com/Artificial-Engineering/lycheeJS-website.git) contains the lychee.js website.
 
 
