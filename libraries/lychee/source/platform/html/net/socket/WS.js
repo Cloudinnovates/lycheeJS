@@ -2,6 +2,7 @@
 lychee.define('lychee.net.socket.WS').tags({
 	platform: 'html'
 }).requires([
+	'lychee.codec.JSON',
 	'lychee.net.protocol.WS'
 ]).includes([
 	'lychee.event.Emitter'
@@ -16,6 +17,7 @@ lychee.define('lychee.net.socket.WS').tags({
 
 }).exports(function(lychee, global, attachments) {
 
+	var _JSON      = lychee.import('lychee.codec.JSON');
 	var _Protocol  = lychee.import('lychee.net.protocol.WS');
 	var _WebSocket = global.WebSocket;
 
@@ -208,7 +210,7 @@ lychee.define('lychee.net.socket.WS').tags({
 		send: function(payload, headers, binary) {
 
 			payload = payload instanceof Buffer ? payload : null;
-			headers = headers instanceof Object ? headers : null;
+			headers = headers instanceof Object ? headers : {};
 			binary  = binary === true;
 
 
@@ -219,9 +221,13 @@ lychee.define('lychee.net.socket.WS').tags({
 
 				if (connection !== null && protocol !== null) {
 
-					var chunk = protocol.send(payload, headers, binary);
+					// XXX: HTML WebSockets don't support Buffer data
+					// var chunk = protocol.send(payload, headers, binary);
 					var enc   = binary === true ? 'binary' : 'utf8';
-
+					var chunk = _JSON.encode({
+						headers: headers,
+						payload: payload
+					});
 
 					if (chunk !== null) {
 

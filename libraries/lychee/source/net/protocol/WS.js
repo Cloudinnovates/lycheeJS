@@ -1,5 +1,11 @@
 
-lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachments) {
+lychee.define('lychee.net.protocol.WS').requires([
+	'lychee.codec.JSON'
+]).exports(function(lychee, global, attachments) {
+
+	var _JSON = lychee.import('lychee.codec.JSON');
+
+
 
 	/*
 	 * HELPERS
@@ -80,15 +86,18 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 	};
 
 
-	var _encode_buffer = function(data, binary) {
+	var _encode_buffer = function(payload, headers, binary) {
 
-		var type           = this.type;
 		var buffer         = null;
-
-		var payload_length = data.length;
+		var data           = _JSON.encode({
+			headers: headers,
+			payload: payload
+		});
 		var mask           = false;
 		var mask_data      = null;
 		var payload_data   = null;
+		var payload_length = data.length;
+		var type           = this.type;
 
 
 		if (type === Class.TYPE.client) {
@@ -205,14 +214,15 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 		var fragment = this.__fragment;
 		var type     = this.type;
-		var result   = {
-			chunk: null,
-			bytes: -1
+		var chunk    = {
+			bytes:   -1,
+			headers: {},
+			payload: null
 		};
 
 
 		if (buffer.length <= 2) {
-			return result;
+			return chunk;
 		}
 
 
@@ -231,11 +241,11 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 			if (mask === true) {
 				mask_data    = buffer.slice(2, 6);
 				payload_data = buffer.slice(6, 6 + payload_length);
-				result.bytes = 6 + payload_length;
+				chunk.bytes  = 6 + payload_length;
 			} else {
 				mask_data    = null;
 				payload_data = buffer.slice(2, 2 + payload_length);
-				result.bytes = 2 + payload_length;
+				chunk.bytes  = 2 + payload_length;
 			}
 
 		} else if (payload_length === 126) {
@@ -245,11 +255,11 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 			if (mask === true) {
 				mask_data    = buffer.slice(4, 8);
 				payload_data = buffer.slice(8, 8 + payload_length);
-				result.bytes = 8 + payload_length;
+				chunk.bytes  = 8 + payload_length;
 			} else {
 				mask_data    = null;
 				payload_data = buffer.slice(4, 4 + payload_length);
-				result.bytes = 4 + payload_length;
+				chunk.bytes  = 4 + payload_length;
 			}
 
 		} else if (payload_length === 127) {
@@ -262,11 +272,11 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 			if (mask === true) {
 				mask_data    = buffer.slice(10, 14);
 				payload_data = buffer.slice(14, 14 + payload_length);
-				result.bytes = 14 + payload_length;
+				chunk.bytes  = 14 + payload_length;
 			} else {
 				mask_data    = null;
 				payload_data = buffer.slice(10, 10 + payload_length);
-				result.bytes = 10 + payload_length;
+				chunk.bytes  = 10 + payload_length;
 			}
 
 		}
@@ -286,12 +296,11 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 			if (fin === true) {
 
-				if (fragment.operator === 0x01) {
-					result.chunk = fragment.payload.toString('utf8');
-				} else if (fragment.operator === 0x02) {
-					result.chunk = fragment.payload.toString('binary');
+				var tmp0 = _JSON.decode(fragment.payload);
+				if (tmp0 !== null) {
+					chunk.headers = tmp0.headers || {};
+					chunk.payload = tmp0.payload || null;
 				}
-
 
 				fragment.operator = 0x00;
 				fragment.payload  = new Buffer(0);
@@ -313,7 +322,11 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 			if (fin === true) {
 
-				result.chunk = payload_data;
+				var tmp1 = _JSON.decode(payload_data);
+				if (tmp1 !== null) {
+					chunk.headers = tmp1.headers || {};
+					chunk.payload = tmp1.payload || null;
+				}
 
 			} else {
 
@@ -328,7 +341,11 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 			if (fin === true) {
 
-				result.chunk = payload_data;
+				var tmp2 = _JSON.decode(payload_data);
+				if (tmp2 !== null) {
+					chunk.headers = tmp2.headers || {};
+					chunk.payload = tmp2.payload || null;
+				}
 
 			} else {
 
@@ -341,30 +358,30 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 		// 8: Connection Close
 		} else if (operator === 0x08) {
 
-			result.chunk = this.close(Class.STATUS.normal_closure);
+			chunk.payload = this.close(Class.STATUS.normal_closure);
 
 
 		// 9: Ping Frame
 		} else if (operator === 0x09) {
 
-			result.chunk = _on_ping_frame.call(this);
+			chunk.payload = _on_ping_frame.call(this);
 
 
 		// 10: Pong Frame
 		} else if (operator === 0x0a) {
 
-			result.chunk = _on_pong_frame.call(this);
+			chunk.payload = _on_pong_frame.call(this);
 
 
 		// 3-7: Reserved Non-Control Frames, 11-15: Reserved Control Frames
 		} else {
 
-			result.chunk = this.close(Class.STATUS.protocol_error);
+			chunk.payload = this.close(Class.STATUS.protocol_error);
 
 		}
 
 
-		return result;
+		return chunk;
 
 	};
 
@@ -444,18 +461,15 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 		send: function(payload, headers, binary) {
 
-			// TODO: Migrate this to correct payload, headers API
-			// (Buffer) payload, (Object) headers, (Boolean) binary
+			payload = payload instanceof Buffer ? payload : null;
+			headers = headers instanceof Object ? headers : null;
+			binary  = binary === true;
 
 
-			var blob = payload instanceof Buffer ? payload : null;
-			binary = binary === true;
-
-
-			if (blob !== null) {
+			if (payload !== null) {
 
 				if (this.__isClosed === false) {
-					return _encode_buffer.call(this, blob, binary);
+					return _encode_buffer.call(this, payload, headers, binary);
 				}
 
 			}
@@ -477,7 +491,9 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 
 				if (blob.length > Class.FRAMESIZE) {
 
-					chunks.push(this.close(Class.STATUS.message_too_big));
+					chunks.push({
+						payload: this.close(Class.STATUS.message_too_big)
+					});
 
 				} else if (this.__isClosed === false) {
 
@@ -490,21 +506,21 @@ lychee.define('lychee.net.protocol.WS').exports(function(lychee, global, attachm
 					buf = tmp;
 
 
-					var result = _decode_buffer.call(this, buf);
+					var chunk = _decode_buffer.call(this, buf);
 
-					while (result.bytes !== -1) {
+					while (chunk.bytes !== -1) {
 
-						if (result.chunk !== null) {
-							chunks.push(result.chunk);
+						if (chunk.payload !== null) {
+							chunks.push(chunk);
 						}
 
 
-						tmp = new Buffer(buf.length - result.bytes);
-						buf.copy(tmp, 0, result.bytes);
+						tmp = new Buffer(buf.length - chunk.bytes);
+						buf.copy(tmp, 0, chunk.bytes);
 						buf = tmp;
 
-						result = null;
-						result = _decode_buffer.call(this, buf);
+						chunk = null;
+						chunk = _decode_buffer.call(this, buf);
 
 					}
 
