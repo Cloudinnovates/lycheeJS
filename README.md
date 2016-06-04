@@ -126,8 +126,9 @@ The above commands will look similar to this if everything went fine.
 
 ## Update lychee.js Engine (Developer Machine)
 
-If you have a lychee.js Engine Installation, you can simply update
-your installation by using git.
+Every developer can update the lychee.js Engine Installation simply
+by using git. The development branch is the most up-to-date branch
+and the branch that our software bots are actively working on.
 
 ```bash
 cd /opt/lycheejs;
